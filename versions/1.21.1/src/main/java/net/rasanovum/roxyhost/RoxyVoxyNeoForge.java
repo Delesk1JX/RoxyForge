@@ -44,13 +44,13 @@ public final class RoxyVoxyNeoForge {
         }
     }
 
-
     private void onRenderLevelStage(RenderLevelStageEvent event) {
         RoxyPowerGridCompat.render(event);
     }
 
     private void onClientTick(ClientTickEvent.Post event) {
         RoxyVoxyLifecycle.tick();
+        RoxyPowerGridCompat.tick();
     }
 
     private void onEntityLeaveLevel(EntityLeaveLevelEvent event) {

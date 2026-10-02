@@ -15,13 +15,26 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class RoxyPowerGridCompat {
     private static final double CACHE_DISTANCE_SQUARED = 64.0 * 64.0;
+    private static final double MAX_RENDER_DISTANCE_SQUARED = 1024.0 * 1024.0;
     private static final int STORE_VERSION = 1;
     private static final Map<UUID, Object> WIRES = new LinkedHashMap<>();
     private static final Map<UUID, Object> STORED_WIRES = new LinkedHashMap<>();
     private static final Map<UUID, Object> PENDING_WIRES = new LinkedHashMap<>();
     private static final Set<UUID> DESTROYED_WIRES = ConcurrentHashMap.newKeySet();
+    private static final Map<MethodKey, Method[]> METHOD_CACHE = new ConcurrentHashMap<>();
+    private static final Map<FieldKey, Field> FIELD_CACHE = new ConcurrentHashMap<>();
+    private static final ClassValue<Boolean> WIRE_TYPES = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> type) {
+            for (Class<?> parent = type; parent != null; parent = parent.getSuperclass()) {
+                if (parent.getName().equals("org.patryk3211.powergrid.electricity.wire.BaseWireEntity")) return true;
+            }
+            return false;
+        }
+    };
     private static Object level;
     private static Path storePath;
+    private static boolean storeDirty;
     private static boolean reflectionFailureReported;
 
     private RoxyPowerGridCompat() {
@@ -62,8 +75,25 @@ public final class RoxyPowerGridCompat {
             if (snapshot == null) return;
             PENDING_WIRES.remove(uuid);
             STORED_WIRES.put(uuid, tag);
-            writeStore();
+            storeDirty = true;
             WIRES.put(uuid, snapshot);
+        } catch (ReflectiveOperationException | RuntimeException exception) {
+            reportReflectionFailure(exception);
+        }
+    }
+
+    public static void tick() {
+        try {
+            Object minecraft = minecraft();
+            Object currentLevel = field(minecraft, "level");
+            if (currentLevel == null) {
+                if (storeDirty) writeStore();
+                return;
+            }
+            ensureLevel(currentLevel);
+            purgeDestroyedWires();
+            persistPending();
+            if (storeDirty) writeStore();
         } catch (ReflectiveOperationException | RuntimeException exception) {
             reportReflectionFailure(exception);
         }
@@ -76,13 +106,13 @@ public final class RoxyPowerGridCompat {
             Object currentLevel = field(minecraft, "level");
             Object player = field(minecraft, "player");
             if (currentLevel == null || player == null) return;
-            ensureLevel(currentLevel);
+            if (level != currentLevel) return;
             purgeDestroyedWires();
-            persistPending();
             if (WIRES.isEmpty()) return;
 
             Object camera = invoke(event, "getCamera");
             Object cameraPosition = invoke(camera, "getPosition");
+            Object frustum = invoke(event, "getFrustum");
             double cameraX = ((Number) publicField(cameraPosition, "x")).doubleValue();
             double cameraY = ((Number) publicField(cameraPosition, "y")).doubleValue();
             double cameraZ = ((Number) publicField(cameraPosition, "z")).doubleValue();
@@ -93,11 +123,14 @@ public final class RoxyPowerGridCompat {
             Object dispatcher = invoke(minecraft, "getEntityRenderDispatcher");
             Object poseStack = invoke(event, "getPoseStack");
             Method render = method(dispatcher.getClass(), "render", 9);
+            boolean renderedAny = false;
 
             for (Object wire : WIRES.values()) {
                 int id = ((Number) invoke(wire, "getId")).intValue();
                 if (invoke(currentLevel, "getEntity", id) == wire) continue;
-                if (((Number) invoke(wire, "distanceToSqr", player)).doubleValue() <= CACHE_DISTANCE_SQUARED) continue;
+                double distance = ((Number) invoke(wire, "distanceToSqr", player)).doubleValue();
+                if (distance <= CACHE_DISTANCE_SQUARED || distance > MAX_RENDER_DISTANCE_SQUARED) continue;
+                if (frustum != null && !Boolean.TRUE.equals(invoke(frustum, "isVisible", invoke(wire, "getBoundingBox")))) continue;
                 render.invoke(
                         dispatcher,
                         wire,
@@ -110,8 +143,9 @@ public final class RoxyPowerGridCompat {
                         buffers,
                         0x00F000F0
                 );
+                renderedAny = true;
             }
-            invoke(buffers, "endBatch");
+            if (renderedAny) invoke(buffers, "endBatch");
         } catch (ReflectiveOperationException | RuntimeException exception) {
             reportReflectionFailure(exception);
         }
@@ -120,7 +154,7 @@ public final class RoxyPowerGridCompat {
     private static Object minecraft() throws ReflectiveOperationException {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         Class<?> type = Class.forName("net.minecraft.client.Minecraft", false, loader);
-        return type.getMethod("getInstance").invoke(null);
+        return method(type, "getInstance", 0).invoke(null);
     }
 
     private static Object saveTag(Object entity) throws ReflectiveOperationException {
@@ -151,19 +185,21 @@ public final class RoxyPowerGridCompat {
             } catch (ReflectiveOperationException | RuntimeException ignored) {
             }
         }
-        if (changed) writeStore();
+        if (changed) storeDirty = true;
     }
 
     private static void ensureLevel(Object currentLevel) throws ReflectiveOperationException {
         if (level == currentLevel) return;
+        if (storeDirty) writeStore();
         WIRES.clear();
         STORED_WIRES.clear();
         PENDING_WIRES.clear();
         DESTROYED_WIRES.clear();
+        storeDirty = false;
         reflectionFailureReported = false;
-        level = currentLevel;
         storePath = storePath(currentLevel);
         readStore(currentLevel);
+        level = currentLevel;
     }
 
     private static Path storePath(Object currentLevel) throws ReflectiveOperationException {
@@ -184,7 +220,7 @@ public final class RoxyPowerGridCompat {
         Object root = staticInvoke(nbtIo, "read", storePath);
         if (root == null) return;
         if (((Number) invoke(root, "getInt", "Version")).intValue() != STORE_VERSION) {
-            writeStore();
+            storeDirty = true;
             return;
         }
         Object tags = invoke(root, "getList", "Wires", 10);
@@ -198,7 +234,10 @@ public final class RoxyPowerGridCompat {
     }
 
     private static void writeStore() throws ReflectiveOperationException {
-        if (storePath == null) return;
+        if (storePath == null) {
+            storeDirty = false;
+            return;
+        }
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         Object root = Class.forName("net.minecraft.nbt.CompoundTag", false, loader).getConstructor().newInstance();
         Object tags = Class.forName("net.minecraft.nbt.ListTag", false, loader).getConstructor().newInstance();
@@ -211,22 +250,23 @@ public final class RoxyPowerGridCompat {
             throw new ReflectiveOperationException(exception);
         }
         staticInvoke(Class.forName("net.minecraft.nbt.NbtIo", false, loader), "write", root, storePath);
+        storeDirty = false;
     }
 
     private static void removeWire(UUID uuid) throws ReflectiveOperationException {
         WIRES.remove(uuid);
         PENDING_WIRES.remove(uuid);
-        if (STORED_WIRES.remove(uuid) != null) writeStore();
+        if (STORED_WIRES.remove(uuid) != null) storeDirty = true;
     }
 
     private static void purgeDestroyedWires() throws ReflectiveOperationException {
-        boolean changed = false;
-        for (UUID uuid : DESTROYED_WIRES) {
+        for (var iterator = DESTROYED_WIRES.iterator(); iterator.hasNext();) {
+            UUID uuid = iterator.next();
             WIRES.remove(uuid);
             PENDING_WIRES.remove(uuid);
-            changed |= STORED_WIRES.remove(uuid) != null;
+            if (STORED_WIRES.remove(uuid) != null) storeDirty = true;
+            iterator.remove();
         }
-        if (changed) writeStore();
     }
 
     public static void markServerRemoval(Object entity, Object level) {
@@ -243,59 +283,78 @@ public final class RoxyPowerGridCompat {
     }
 
     private static boolean isPowerGridWire(Object entity) {
-        if (entity == null) return false;
-        for (Class<?> type = entity.getClass(); type != null; type = type.getSuperclass()) {
-            if (type.getName().equals("org.patryk3211.powergrid.electricity.wire.BaseWireEntity")) return true;
-        }
-        return false;
+        return entity != null && WIRE_TYPES.get(entity.getClass());
     }
 
     private static Object invoke(Object owner, String name, Object... arguments) throws ReflectiveOperationException {
-        for (Method candidate : owner.getClass().getMethods()) {
-            if (!candidate.getName().equals(name) || candidate.getParameterCount() != arguments.length) continue;
-            Class<?>[] parameters = candidate.getParameterTypes();
-            boolean compatible = true;
-            for (int i = 0; i < parameters.length; i++) {
-                if (!accepts(parameters[i], arguments[i])) {
-                    compatible = false;
-                    break;
-                }
-            }
-            if (compatible) return candidate.invoke(owner, arguments);
+        for (Method candidate : methods(owner.getClass(), name, arguments.length)) {
+            if (accepts(candidate.getParameterTypes(), arguments)) return candidate.invoke(owner, arguments);
         }
         throw new NoSuchMethodException(owner.getClass().getName() + "." + name + "/" + arguments.length);
     }
 
     private static Method method(Class<?> type, String name, int parameterCount) throws NoSuchMethodException {
-        for (Method method : type.getMethods()) {
-            if (method.getName().equals(name) && method.getParameterCount() == parameterCount) return method;
-        }
+        Method[] methods = methods(type, name, parameterCount);
+        if (methods.length > 0) return methods[0];
         throw new NoSuchMethodException(type.getName() + "." + name + "/" + parameterCount);
     }
 
     private static Object staticInvoke(Class<?> type, String name, Object... arguments) throws ReflectiveOperationException {
-        for (Method candidate : type.getMethods()) {
-            if (!Modifier.isStatic(candidate.getModifiers()) || !candidate.getName().equals(name) || candidate.getParameterCount() != arguments.length) continue;
-            Class<?>[] parameters = candidate.getParameterTypes();
-            boolean compatible = true;
-            for (int i = 0; i < parameters.length; i++) {
-                if (!accepts(parameters[i], arguments[i])) {
-                    compatible = false;
-                    break;
-                }
+        for (Method candidate : methods(type, name, arguments.length)) {
+            if (Modifier.isStatic(candidate.getModifiers()) && accepts(candidate.getParameterTypes(), arguments)) {
+                return candidate.invoke(null, arguments);
             }
-            if (compatible) return candidate.invoke(null, arguments);
         }
         throw new NoSuchMethodException(type.getName() + "." + name + "/" + arguments.length);
     }
 
     private static Object field(Object owner, String name) throws ReflectiveOperationException {
-        Field field = owner.getClass().getField(name);
-        return field.get(owner);
+        return field(owner.getClass(), name).get(owner);
     }
 
     private static Object publicField(Object owner, String name) throws ReflectiveOperationException {
-        return owner.getClass().getField(name).get(owner);
+        return field(owner.getClass(), name).get(owner);
+    }
+
+    private static Method[] methods(Class<?> type, String name, int parameterCount) {
+        return METHOD_CACHE.computeIfAbsent(new MethodKey(type, name, parameterCount), key -> {
+            Method[] all = key.type().getMethods();
+            int matching = 0;
+            for (Method candidate : all) {
+                if (candidate.getName().equals(key.name()) && candidate.getParameterCount() == key.parameterCount()) {
+                    matching++;
+                }
+            }
+            Method[] result = new Method[matching];
+            int index = 0;
+            for (Method candidate : all) {
+                if (candidate.getName().equals(key.name()) && candidate.getParameterCount() == key.parameterCount()) {
+                    result[index++] = candidate;
+                }
+            }
+            return result;
+        });
+    }
+
+    private static Field field(Class<?> type, String name) throws NoSuchFieldException {
+        try {
+            return FIELD_CACHE.computeIfAbsent(new FieldKey(type, name), key -> {
+                try {
+                    return key.type().getField(key.name());
+                } catch (NoSuchFieldException exception) {
+                    throw new FieldLookupException(exception);
+                }
+            });
+        } catch (FieldLookupException exception) {
+            throw exception.cause;
+        }
+    }
+
+    private static boolean accepts(Class<?>[] parameters, Object[] arguments) {
+        for (int i = 0; i < parameters.length; i++) {
+            if (!accepts(parameters[i], arguments[i])) return false;
+        }
+        return true;
     }
 
     private static boolean accepts(Class<?> parameter, Object argument) {
@@ -309,6 +368,20 @@ public final class RoxyPowerGridCompat {
                 || (parameter == float.class && argument instanceof Float)
                 || (parameter == double.class && argument instanceof Double)
                 || (parameter == char.class && argument instanceof Character);
+    }
+
+    private record MethodKey(Class<?> type, String name, int parameterCount) {
+    }
+
+    private record FieldKey(Class<?> type, String name) {
+    }
+
+    private static final class FieldLookupException extends RuntimeException {
+        private final NoSuchFieldException cause;
+
+        private FieldLookupException(NoSuchFieldException cause) {
+            this.cause = cause;
+        }
     }
 
     private static void reportReflectionFailure(Throwable exception) {

@@ -128,6 +128,8 @@ public final class RoxyBytecodeRemapper {
     private static final String BLOCK = "net/minecraft/world/level/block/Block";
     private static final String LIQUID_BLOCK = "net/minecraft/world/level/block/LiquidBlock";
     private static final String BLOCK_STATE_COMPAT = "net/rasanovum/roxy/bridge/RoxyBlockStateBridge";
+    private static final String SURFACE_SAMPLES_COMPAT =
+            "net/rasanovum/roxy/bridge/RoxySurfaceSamplesBridge";
     private static final String FLUID_STATE_COMPAT = "net/rasanovum/roxy/bridge/RoxyFluidStateBridge";
     private static final String COMPOUND_TAG = "net/minecraft/nbt/CompoundTag";
     private static final String COMPOUND_TAG_COMPAT = "net/rasanovum/roxy/bridge/RoxyCompoundTagBridge";
@@ -135,6 +137,8 @@ public final class RoxyBytecodeRemapper {
     private static final String TEXTURE_ATLAS_COMPAT = "net/rasanovum/roxy/bridge/RoxyTextureAtlasBridge";
     private static final String VOXY_TEXTURE_BAKERY = "me/cortex/voxy/client/core/model/bakery/SoftwareModelTextureBakery";
     private static final String VOXY_MODEL_FACTORY = "me/cortex/voxy/client/core/model/ModelFactory";
+    private static final String VOXY_MDIC_SECTION_RENDERER =
+            "me/cortex/voxy/client/core/rendering/section/backend/mdic/MDICSectionRenderer";
     private static final String TEXTURE_COMPAT = "net/rasanovum/roxy/bridge/RoxyTextureBridge";
     private static final String VOXY_RASTERIZER = "Lme/cortex/voxy/client/core/model/bakery/SoftwareRasterizer;";
     private static final String VOXY_LIGHT_MAP_HELPER = "me/cortex/voxy/client/core/rendering/util/LightMapHelper";
@@ -1533,6 +1537,17 @@ public final class RoxyBytecodeRemapper {
                 method.visitLabel(visible);
 
                 method.visitVarInsn(Opcodes.ALOAD, 1);
+                method.visitMethodInsn(
+                        Opcodes.INVOKESTATIC,
+                        SURFACE_SAMPLES_COMPAT,
+                        "normalizeForModel",
+                        "(Ljava/lang/Object;)Ljava/lang/Object;",
+                        false
+                );
+                method.visitTypeInsn(Opcodes.CHECKCAST, BLOCK_STATE);
+                method.visitVarInsn(Opcodes.ASTORE, 1);
+
+                method.visitVarInsn(Opcodes.ALOAD, 1);
                 method.visitMethodInsn(Opcodes.INVOKESTATIC,
                         "net/rasanovum/roxy/bridge/RoxyModelTintBridge", "beginBlock", "(Ljava/lang/Object;)V", false);
 
@@ -1608,6 +1623,15 @@ public final class RoxyBytecodeRemapper {
                 method.visitIntInsn(Opcodes.BIPUSH, 7);
                 method.visitJumpInsn(Opcodes.IF_ICMPGE, faceDone);
 
+                method.visitVarInsn(Opcodes.ALOAD, 5);
+                method.visitLdcInsn(42L);
+                method.visitMethodInsn(
+                        Opcodes.INVOKEINTERFACE,
+                        RANDOM_SOURCE,
+                        "setSeed",
+                        "(J)V",
+                        true
+                );
                 method.visitVarInsn(Opcodes.ALOAD, 3);
                 method.visitVarInsn(Opcodes.ALOAD, 1);
                 method.visitVarInsn(Opcodes.ALOAD, 6);

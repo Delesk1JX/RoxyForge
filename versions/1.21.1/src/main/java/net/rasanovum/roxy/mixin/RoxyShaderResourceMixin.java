@@ -2,6 +2,7 @@ package net.rasanovum.roxy.mixin;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
+import net.rasanovum.roxy.shader.RoxyAmdHiZShader;
 import net.rasanovum.roxy.shader.RoxyVoxyRequestShader;
 import net.rasanovum.roxy.shader.RoxyFogShader;
 import net.rasanovum.roxy.shader.RoxyIceFaceCullingShader;
@@ -60,6 +61,7 @@ public final class RoxyShaderResourceMixin {
 
         try {
             String source = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            source = RoxyAmdHiZShader.patch(path, source);
             source = RoxyVoxyRequestShader.patch(path, source);
             source = RoxyFogShader.patch(path, source);
             source = RoxyIceFaceCullingShader.patch(path, source);

@@ -2,15 +2,12 @@ package net.rasanovum.roxy;
 
 import net.rasanovum.roxy.loader.RoxyFabricRuntime;
 import net.rasanovum.roxy.loader.RoxyCrashReportHeader;
-import net.rasanovum.roxy.compat.RoxyPowerGridCompat;
 import net.rasanovum.roxy.client.RoxyClientWarnings;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
@@ -20,8 +17,6 @@ public final class RoxyNeoForge {
         RoxyCrashReportHeader.register();
         modBus.addListener(this::onClientSetup);
         NeoForge.EVENT_BUS.addListener(this::onRegisterClientCommands);
-        NeoForge.EVENT_BUS.addListener(this::onRenderLevelStage);
-        NeoForge.EVENT_BUS.addListener(this::onEntityLeaveLevel);
         NeoForge.EVENT_BUS.addListener(RoxyClientWarnings::onScreenOpening);
     }
 
@@ -38,13 +33,5 @@ public final class RoxyNeoForge {
         } catch (ReflectiveOperationException | LinkageError exception) {
             System.err.println("Roxy: unable to register the Voxy client command: " + exception);
         }
-    }
-
-    private void onRenderLevelStage(RenderLevelStageEvent event) {
-        RoxyPowerGridCompat.render(event);
-    }
-
-    private void onEntityLeaveLevel(EntityLeaveLevelEvent event) {
-        RoxyPowerGridCompat.markServerRemoval(event.getEntity(), event.getLevel());
     }
 }

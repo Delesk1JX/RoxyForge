@@ -38,6 +38,7 @@ public final class RoxyVoxyRenderPatch {
     private static final Map<Object, Long> SERVICE_WORLDS = new WeakHashMap<>();
     private static final Map<Object, Long> TASK_EPOCHS = new WeakHashMap<>();
     private static final Map<TaskPositionKey, Long> LATEST_EPOCHS = new HashMap<>();
+    private static final Map<TaskPositionKey, Integer> IN_FLIGHT_COUNTS = new HashMap<>();
     private static final ConcurrentMap<PendingTaskKey, Boolean> PENDING_RENDER_TASKS = new ConcurrentHashMap<>();
     private static final Object PUBLICATION_LOCK = new Object();
     private static final Object RENDER_LOCK = new Object();
@@ -153,6 +154,7 @@ public final class RoxyVoxyRenderPatch {
                 DIRTY_TASK_REQUEUE_COUNT.set(0L);
                 REPLACED_TASK_REQUEUE_COUNT.set(0L);
                 IN_FLIGHT_TASKS.clear();
+                IN_FLIGHT_COUNTS.clear();
                 TASK_EPOCHS.clear();
                 LATEST_EPOCHS.clear();
                 if (clearPendingRenderTasks) {
@@ -317,7 +319,9 @@ public final class RoxyVoxyRenderPatch {
                 Long knownEpoch = TASK_EPOCHS.get(task);
                 if (knownEpoch != null) epoch = knownEpoch;
                 TaskState state = new TaskState(world);
-                IN_FLIGHT_TASKS.put(key, state);
+                if (IN_FLIGHT_TASKS.put(key, state) == null) {
+                    IN_FLIGHT_COUNTS.merge(key.positionKey(), 1, Integer::sum);
+                }
                 TASK_STAMP.set(new TaskStamp(renderGenerationService, position, sequence, world, task, state, epoch));
             }
         } catch (ReflectiveOperationException | RuntimeException | LinkageError exception) {
@@ -508,6 +512,7 @@ public final class RoxyVoxyRenderPatch {
         TaskKey key = new TaskKey(taskStamp.renderGenerationService, taskStamp.position, taskStamp.task);
         if (!IN_FLIGHT_TASKS.remove(key, taskStamp.state)) return false;
         TaskPositionKey positionKey = key.positionKey();
+        decrementInFlight(positionKey);
         if (hasInFlightTask(positionKey)) return false;
         boolean queued = QUEUED_TASKS.containsKey(positionKey);
         boolean dirty = DIRTY_POSITIONS.remove(positionKey) != null;
@@ -520,18 +525,21 @@ public final class RoxyVoxyRenderPatch {
     private static void removeTask(TaskStamp taskStamp) {
         if (taskStamp.state == null || taskStamp.position == Long.MIN_VALUE) return;
         TaskPositionKey positionKey = new TaskPositionKey(taskStamp.renderGenerationService, taskStamp.position);
-        IN_FLIGHT_TASKS.remove(
+        if (IN_FLIGHT_TASKS.remove(
                 new TaskKey(taskStamp.renderGenerationService, taskStamp.position, taskStamp.task),
                 taskStamp.state
-        );
+        )) decrementInFlight(positionKey);
         if (!hasInFlightTask(positionKey)) DIRTY_POSITIONS.remove(positionKey);
     }
 
     private static boolean hasInFlightTask(TaskPositionKey positionKey) {
-        for (TaskKey taskKey : IN_FLIGHT_TASKS.keySet()) {
-            if (taskKey.positionKey().equals(positionKey)) return true;
-        }
-        return false;
+        return IN_FLIGHT_COUNTS.containsKey(positionKey);
+    }
+
+    private static void decrementInFlight(TaskPositionKey positionKey) {
+        int remaining = IN_FLIGHT_COUNTS.get(positionKey) - 1;
+        if (remaining == 0) IN_FLIGHT_COUNTS.remove(positionKey);
+        else IN_FLIGHT_COUNTS.put(positionKey, remaining);
     }
 
     private static boolean hasPendingTaskLocked(TaskPositionKey positionKey) {
