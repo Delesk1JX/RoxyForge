@@ -1,0 +1,423 @@
+﻿"""Build RoxyForge's runtime mapping: Fabric intermediary 1.21.11 -> Forge 1.20.1 SRG members.
+
+Voxy is compiled against Fabric intermediary names for 1.21.11. Forge 1.20.1 keeps Mojang's official
+class names at runtime but renames every field/method to SRG (`m_7160_`). So the mapping we need is:
+
+    class_2248                                -> net/minecraft/world/entity/Entity   (official 1.20.1)
+    class_2248.method_5678(Lclass_2338;I)V     -> m_1234_(Lnet/minecraft/world/entity/Entity;I)V
+
+Chain: intermediary(1.21.11) matches intermediary(1.20.1) by name (Fabric's intermediary namespace is
+stable across versions), which gives official(1.20.1); Mojang's client.txt turns that into obfuscated
+names, and Forge's joined.tsrg turns obfuscated into SRG.
+
+Usage:
+    python build_mappings.py --voxy path/to/voxy.jar [--out roxy-mappings] [--report report.txt]
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import struct
+import zipfile
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+DOWNLOADS = HERE / "downloads"
+
+TAG_UTF8 = 1
+TAG_CLASS = 7
+TAG_FIELD = 9
+TAG_METHOD = 10
+TAG_NAME_AND_TYPE = 12
+
+
+# --------------------------------------------------------------------------- tiny v1
+
+class Tiny:
+    """Fabric intermediary mappings (tiny v1: official <-> intermediary)."""
+
+    def __init__(self) -> None:
+        self.classes: dict[str, str] = {}          # intermediary -> official
+        self.fields: dict[tuple[str, str, str], str] = {}
+        self.methods: dict[tuple[str, str, str], str] = {}
+
+    @classmethod
+    def read(cls, jar: Path) -> "Tiny":
+        with zipfile.ZipFile(jar) as zf:
+            text = zf.read("mappings/mappings.tiny").decode("utf-8")
+        return cls.parse(text)
+
+    @classmethod
+    def parse(cls, text: str) -> "Tiny":
+        result = cls()
+        intermediary_owner = None
+        for line in text.splitlines():
+            parts = line.split("\t")
+            head = parts[0]
+            if head.startswith("v1") or head.startswith("v2"):
+                continue
+            if head == "CLASS" and len(parts) >= 3:
+                result.classes[parts[2]] = parts[1]
+                intermediary_owner = parts[2]
+                continue
+            if len(parts) >= 5 and parts[0] in ("FIELD", "METHOD"):
+                # tiny v1: <FIELD|METHOD> <owner> <descriptor> <name> <intermediaryName>
+                owner, descriptor, name, intermediary = parts[1], parts[2], parts[3], parts[4]
+                if intermediary_owner is None:
+                    continue
+                key = (intermediary_owner, intermediary, _to_intermediary_descriptor(descriptor, result))
+                if parts[0] == "FIELD":
+                    result.fields[key] = (owner, name, descriptor)
+                else:
+                    result.methods[key] = (owner, name, descriptor)
+        return result
+
+
+def _to_intermediary_descriptor(descriptor: str, tiny: Tiny) -> str:
+    official_to_intermediary = {official: inter for inter, official in tiny.classes.items()}
+    out = []
+    index = 0
+    while index < len(descriptor):
+        char = descriptor[index]
+        out.append(char)
+        if char != "L":
+            index += 1
+            continue
+        end = descriptor.index(";", index)
+        internal = descriptor[index + 1:end]
+        out.append(official_to_intermediary.get(internal, internal))
+        out.append(";")
+        index = end + 1
+    return "".join(out)
+
+
+# --------------------------------------------------------------------------- Mojang client.txt
+
+class MojangMappings:
+    """ProGuard mappings: official (dotted) -> obfuscated."""
+
+    def __init__(self) -> None:
+        self.classes: dict[str, str] = {}              # dotted official -> obf internal
+        self.fields: dict[tuple[str, str], str] = {}
+        self.members: dict[tuple[str, str], str] = {}
+
+    @classmethod
+    def read(cls, path: Path) -> "MojangMappings":
+        result = cls()
+        owner = None
+        for raw in path.read_text(encoding="utf-8", errors="replace").splitlines():
+            if not raw.startswith(" "):
+                if " -> " in raw and raw.rstrip().endswith(":"):
+                    official = raw.split(" -> ", 1)[0].strip()
+                    obf = raw.rsplit(" -> ", 1)[1].strip()[:-1]
+                    owner = official.replace(".", "/")
+                    result.classes[owner] = obf
+                continue
+            if owner is None or " -> " not in raw:
+                continue
+            body = raw.strip()
+            # Mojang lines start with optional "<line>:<line>:" prefixes ("10:10:void foo() -> a").
+            body = re.sub(r"^(?:\d+:\d+:)+", "", body)
+            head, obf_name = body.rsplit(" -> ", 1)
+            head = head.strip()
+            obf_name = obf_name.strip()
+            if "(" in head:
+                name = head[head.rindex(" ") + 1:head.index("(")]
+            elif " " in head:
+                name = head[head.rindex(" ") + 1:]
+            else:
+                name = head
+            result.members[(owner, name)] = obf_name
+        return result
+
+
+# --------------------------------------------------------------------------- Forge tsrg
+
+class Tsrg:
+    """Forge joined.tsrg: obfuscated -> SRG."""
+
+    def __init__(self) -> None:
+        self.classes: dict[str, str] = {}
+        self.members: dict[tuple[str, str], str] = {}
+        self.members_by_descriptor: dict[tuple[str, str, str], str] = {}
+
+    @classmethod
+    def parse(cls, text: str) -> "Tsrg":
+        result = cls()
+        obf_owner = None
+        srg_owner = None
+        for raw in text.splitlines():
+            if not raw:
+                continue
+            if not raw.startswith("\t"):
+                parts = raw.split(" ")
+                if len(parts) >= 2 and not parts[0].startswith("tsrg"):
+                    obf_owner, srg_owner = parts[0], parts[1]
+                    result.classes[obf_owner] = srg_owner
+                continue
+            stripped = raw.lstrip("\t")
+            depth = len(raw) - len(stripped)
+            parts = stripped.split(" ")
+            if parts[0] == "c":
+                continue
+            # tsrg2 members are "<obfName> [desc] <srgName> <id>"; methods carry the descriptor, and
+            # overloads share an obfuscated name but not an SRG one, so keep a descriptor-keyed index too.
+            if len(parts) >= 4:
+                result.members[(obf_owner, parts[0])] = parts[2]
+                result.members_by_descriptor[(obf_owner, parts[0], parts[1])] = parts[2]
+            elif len(parts) == 3:
+                result.members[(obf_owner, parts[0])] = parts[1]
+        return result
+
+
+# --------------------------------------------------------------------------- class files
+
+def class_references(data: bytes) -> tuple[set[str], set[tuple[str, str, str]], set[tuple[str, str, str]]]:
+    """(classes, fields, methods) referenced by a class file, from its constant pool."""
+    if data[:4] != b"\xca\xfe\xba\xbe":
+        return set(), set(), set()
+    count = struct.unpack(">H", data[8:10])[0]
+    offset = 10
+    utf8: list[str | None] = [None] * count
+    class_index: dict[int, str] = {}
+    name_type: dict[int, tuple[str, str]] = {}
+    refs: list[tuple[int, int, int]] = []
+
+    index = 1
+    while index < count:
+        tag = data[offset]
+        offset += 1
+        if tag == TAG_UTF8:
+            length = struct.unpack(">H", data[offset:offset + 2])[0]
+            utf8[index] = data[offset + 2:offset + 2 + length].decode("utf-8", "replace")
+            offset += 2 + length
+        elif tag in (3, 4):
+            offset += 4
+        elif tag in (5, 6):
+            offset += 8
+            index += 1
+        elif tag == TAG_CLASS:
+            class_index[index] = struct.unpack(">H", data[offset:offset + 2])[0]
+            offset += 2
+        elif tag in (7, 8, 16, 19, 20):
+            offset += 2
+        elif tag in (TAG_FIELD, TAG_METHOD):
+            refs.append((struct.unpack(">H", data[offset:offset + 2])[0],
+                         struct.unpack(">H", data[offset + 2:offset + 4])[0]))
+            offset += 4
+        elif tag == TAG_NAME_AND_TYPE:
+            name_type[index] = (struct.unpack(">H", data[offset:offset + 2])[0],
+                                struct.unpack(">H", data[offset + 2:offset + 4])[0])
+            offset += 4
+        elif tag in (11, 12, 17, 18):
+            offset += 4
+        elif tag == 15:
+            offset += 3
+        else:
+            break
+        index += 1
+
+    classes = {utf8[class_index[i]] for i in class_index if utf8[class_index[i]]}
+    fields: set[tuple[str, str, str]] = set()
+    methods: set[tuple[str, str, str]] = set()
+    for class_ref, name_ref in refs:
+        owner = utf8[class_index.get(class_ref, 0)] if class_ref in class_index else None
+        if owner is None or name_ref not in name_type:
+            continue
+        name, descriptor = name_type[name_ref]
+        entry = (owner, utf8[name], utf8[descriptor])
+        if name_ref and (class_ref, name_ref) and entry not in methods:
+            pass
+        methods.add(entry)
+    return classes, fields, methods
+
+
+def split_field_or_method(data: bytes) -> tuple[set[str], set[tuple[str, str, str]], set[tuple[str, str, str]]]:
+    classes, _, members = class_references(data)
+    # The constant pool does not keep the field/method tag per ref, so classify by descriptor.
+    fields = {m for m in members if "(" not in m[2]}
+    methods = {m for m in members if "(" in m[2]}
+    return classes, fields, methods
+
+
+def _descriptor_shape(descriptor: str) -> str:
+    """Descriptor with every reference type erased, so overloads can be compared across versions."""
+    out = []
+    index = 0
+    while index < len(descriptor):
+        char = descriptor[index]
+        if char == "L":
+            end = descriptor.find(";", index)
+            if end < 0:
+                break
+            out.append("L;")
+            index = end + 1
+            continue
+        out.append(char)
+        index += 1
+    return "".join(out)
+
+
+# --------------------------------------------------------------------------- build
+
+def build(voxy_jar: Path | None, out_dir: Path, report_path: Path) -> None:
+    # Fabric's 1.21.11 tiny maps official <-> intermediary; its 1.20.1 tiny maps obfuscated <-> intermediary,
+    # because Mojang mappings did not exist for 1.20.1. Matching the intermediary namespace across the two is
+    # what ties 1.21.11 code to 1.20.1 classes.
+    intermediary_new = Tiny.read(DOWNLOADS / "intermediary-1.21.11.jar")
+    intermediary_old = Tiny.read(DOWNLOADS / "intermediary-1.20.1.jar")
+    mojang = MojangMappings.read(DOWNLOADS / "client-1.20.1.txt")
+    with zipfile.ZipFile(DOWNLOADS / "mcp_config-1.20.1.zip") as zf:
+        tsrg = Tsrg.parse(zf.read("config/joined.tsrg").decode("utf-8", "replace"))
+
+    # intermediary -> obfuscated(1.20.1) -> official(1.20.1). Forge 1.20.1 runs with official class names.
+    obf_old_to_official = {obf: official for official, obf in mojang.classes.items()}
+
+    def target_class(intermediary_name: str) -> str | None:
+        obf = intermediary_old.classes.get(intermediary_name)
+        if obf is None:
+            return None
+        return obf_old_to_official.get(obf)
+
+    def target_member(obf_owner: str, obf_name: str, obf_descriptor: str | None) -> str | None:
+        if obf_descriptor is not None:
+            exact = tsrg.members_by_descriptor.get((obf_owner, obf_name, obf_descriptor))
+            if exact:
+                return exact
+        return tsrg.members.get((obf_owner, obf_name))
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    class_lines = []
+    for intermediary in sorted(intermediary_new.classes):
+        official = target_class(intermediary)
+        if official:
+            class_lines.append(f"C\t{intermediary}\t{official}")
+
+    # intermediary member names are stable across versions, descriptors are not, so match on the name and
+    # only use the descriptor to pick between overloads.
+    def index_members(table: dict) -> dict[tuple[str, str], list[tuple[str, str, str]]]:
+        index: dict[tuple[str, str], list[tuple[str, str, str]]] = {}
+        for (owner, name, descriptor), (obf_owner, obf_name, _) in table.items():
+            index.setdefault((owner, name), []).append((descriptor, obf_owner, obf_name))
+        return index
+
+    old_methods = index_members(intermediary_old.methods)
+    old_fields = index_members(intermediary_old.fields)
+
+    def match_member(index, owner, name, descriptor):
+        candidates = index.get((owner, name))
+        if not candidates:
+            return None, "missing"
+        for entry in candidates:
+            if entry[0] == descriptor:
+                return entry, "exact"
+        if len(candidates) == 1:
+            return candidates[0], "name-only"
+        wanted = _descriptor_shape(descriptor)
+        same_shape = [entry for entry in candidates if _descriptor_shape(entry[0]) == wanted]
+        if len(same_shape) == 1:
+            return same_shape[0], "shape"
+        return None, "ambiguous"
+
+    member_lines = []
+    quality = {"exact": 0, "name-only": 0, "shape": 0}
+    ambiguous: list[str] = []
+    for kind, table, index in (("M", intermediary_new.methods, old_methods),
+                               ("F", intermediary_new.fields, old_fields)):
+        for (owner, name, descriptor) in table:
+            entry, how = match_member(index, owner, name, descriptor)
+            if entry is None:
+                if how == "ambiguous":
+                    ambiguous.append(f"{kind} {owner}.{name}{descriptor}")
+                continue
+            obf_descriptor, obf_owner, obf_name = entry
+            srg = target_member(obf_owner, obf_name, obf_descriptor)
+            official_owner = target_class(owner)
+            if not srg or not official_owner:
+                continue
+            quality[how] += 1
+            member_lines.append(f"{kind}\t{owner}\t{name}\t{descriptor}\t{official_owner}\t{srg}")
+
+    target = out_dir / "intermediary-1.21.11-to-srg-1.20.1.txt"
+    with target.open("w", encoding="utf-8") as handle:
+        handle.write("# RoxyForge runtime mapping: Fabric intermediary 1.21.11 -> Forge 1.20.1\n")
+        handle.write("# Forge 1.20.1 runs with official class names and SRG members (m_/f_).\n")
+        handle.write("# C <intermediary class> <official 1.20.1 class>\n")
+        handle.write("# M <owner> <name> <descriptor> <official owner> <srg name>\n")
+        handle.write("# F <owner> <name> <descriptor> <official owner> <srg name>\n")
+        for line in class_lines:
+            handle.write(line + "\n")
+        for line in member_lines:
+            handle.write(line + "\n")
+
+    stats = {
+        "classes_total": len(intermediary_new.classes),
+        "classes_mapped": len(class_lines),
+        "methods_total": len(intermediary_new.methods),
+        "methods_mapped": sum(1 for line in member_lines if line.startswith("M")),
+        "fields_total": len(intermediary_new.fields),
+        "fields_mapped": sum(1 for line in member_lines if line.startswith("F")),
+        "tsrg_classes": len(tsrg.classes),
+        "match_exact": quality["exact"],
+        "match_name_only": quality["name-only"],
+        "match_shape": quality["shape"],
+        "ambiguous": len(ambiguous),
+    }
+
+    if voxy_jar and voxy_jar.exists():
+        classes_mapped = {parts[1]: parts[2] for parts in (line.split("\t") for line in class_lines)}
+        member_index = {}
+        for line in member_lines:
+            parts = line.split("\t")
+            member_index[(parts[1], parts[2], parts[3])] = (parts[4], parts[5])
+
+        total_classes = hit_classes = 0
+        total_members = hit_members = 0
+        missing: dict[str, int] = {}
+        with zipfile.ZipFile(voxy_jar) as zf:
+            for entry in zf.namelist():
+                if not entry.endswith(".class"):
+                    continue
+                classes, fields, methods = split_field_or_method(zf.read(entry))
+                for referenced in classes:
+                    # Only Minecraft's own names need remapping; JDK, Sodium and Voxy's own classes do not.
+                    if not referenced.startswith("net/minecraft"):
+                        continue
+                    total_classes += 1
+                    if referenced in classes_mapped:
+                        hit_classes += 1
+                    else:
+                        missing[f"class {referenced}"] = missing.get(f"class {referenced}", 0) + 1
+                for member in fields | methods:
+                    if not member[0].startswith("net/minecraft"):
+                        continue
+                    total_members += 1
+                    if member in member_index:
+                        hit_members += 1
+                    else:
+                        missing[f"member {member[0]}.{member[1]}{member[2]}"] = \
+                            missing.get(f"member {member[0]}.{member[1]}{member[2]}", 0) + 1
+        stats.update(voxy_classes_total=total_classes, voxy_classes_mapped=hit_classes,
+                     voxy_members_total=total_members, voxy_members_mapped=hit_members)
+        stats["voxy_class_coverage"] = round(100.0 * hit_classes / total_classes, 2) if total_classes else 0.0
+        stats["voxy_member_coverage"] = round(100.0 * hit_members / total_members, 2) if total_members else 0.0
+        top = sorted(missing.items(), key=lambda item: -item[1])[:40]
+        stats["top_unmapped"] = top
+
+    report_path.write_text(json.dumps(stats, indent=2), encoding="utf-8")
+    print(json.dumps({k: v for k, v in stats.items() if k != "top_unmapped"}, indent=2))
+    print(f"mapping file: {target}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--voxy", type=Path, help="Voxy jar to measure coverage against")
+    parser.add_argument("--out", type=Path, default=HERE / "roxy-mappings")
+    parser.add_argument("--report", type=Path, default=HERE / "coverage-report.json")
+    args = parser.parse_args()
+    build(args.voxy, args.out, args.report)
+
+
+if __name__ == "__main__":
+    main()

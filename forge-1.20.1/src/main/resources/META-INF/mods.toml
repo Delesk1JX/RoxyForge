@@ -1,0 +1,24 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+license = "MIT"
+
+[[mods]]
+modId = "roxy"
+version = "${version}"
+displayName = "Roxy (Forge 1.20.1)"
+description = "Loads the Voxy LoD rendering mod on Forge 1.20.1 by bridging its Fabric entrypoints and APIs."
+logoFile = "assets/roxy/icon.png"
+
+[[dependencies.roxy]]
+modId = "forge"
+mandatory = true
+versionRange = "[47.4.0,)"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.roxy]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.20.1,1.20.2)"
+ordering = "NONE"
+side = "CLIENT"

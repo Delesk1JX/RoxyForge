@@ -1,0 +1,7 @@
+# Generated from the inputs in downloads/ (Fabric intermediary, Mojang client.txt, Forge joined.tsrg).
+# Mojang's client.txt forbids redistributing its mappings, so the derived file stays out of git too.
+# Regenerate with: python tools/roxy-mappings/build_mappings.py --voxy <path to voxy.jar>
+downloads/
+__pycache__/
+coverage-report.json
+roxy-mappings/
