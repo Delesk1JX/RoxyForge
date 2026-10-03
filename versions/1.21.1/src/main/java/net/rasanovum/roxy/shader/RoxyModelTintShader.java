@@ -8,7 +8,7 @@ public final class RoxyModelTintShader {
             String marker = "bool hasAO = isShaded;";
             if (source.indexOf(marker) < 0 || source.indexOf(marker) != source.lastIndexOf(marker))
                 throw new IllegalStateException("Unsupported Voxy ambient occlusion shader");
-            return source.replace(marker, "bool hasAO = isShaded || (model.flagsA & 16u) != 0u;");
+            return source.replace(marker, "bool hasAO = isShaded || (model.flagsA & 32u) != 0u;");
         }
         if (!path.equals("/assets/voxy/shaders/lod/gl46/quads.frag")) return source;
         source = replace(source, "vec4 tintTest = textureLod(blockModelAtlas, texturePos, 0);", "texturePos");

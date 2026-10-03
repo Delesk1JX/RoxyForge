@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.ChunkPos;
+import net.rasanovum.roxy.tfc.TfcCompatConfig;
 import net.rasanovum.roxy.tfc.TfcVoxyBridge;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +27,7 @@ public final class RoxyTfcBackfill {
     private RoxyTfcBackfill() {}
 
     public static synchronized void request(Object level, int x, int z) {
-        if (!enabled || level != world || world == null || distance(x, z) > 512L * 512) return;
+        if (!TfcCompatConfig.enabled() || !enabled || level != world || world == null || distance(x, z) > 512L * 512) return;
         long key = ChunkPos.asLong(x, z);
         if (missing.contains(key) || inFlight.contains(key) || near.contains(key) || far.contains(key)) return;
         boolean close = distance(x, z) <= 128L * 128;
@@ -37,24 +38,33 @@ public final class RoxyTfcBackfill {
         (close ? near : far).add(key);
     }
 
-    public static synchronized void retryMissing() { missing.clear(); }
+    public static synchronized void retryMissing() { if (TfcCompatConfig.enabled()) missing.clear(); }
 
-    public static synchronized int pendingCount() { return enabled ? near.size() + far.size() + inFlight.size() : 0; }
+    public static synchronized int pendingCount() {
+        return TfcCompatConfig.enabled() && enabled ? near.size() + far.size() + inFlight.size() : 0;
+    }
 
     public static void tick() { tick(Minecraft.getInstance().level); }
 
     public static synchronized void resetWorld(Object level) {
-        if (world == level) return;
+        if (world == level && (TfcCompatConfig.enabled() || !enabled)) return;
         world = level instanceof ClientLevel client ? client : null;
         epoch++;
         near.clear(); far.clear(); missing.clear(); inFlight.clear(); warned = false; enabled = false;
     }
 
+    public static synchronized void disable() {
+        if (!enabled && near.isEmpty() && far.isEmpty() && missing.isEmpty() && inFlight.isEmpty()) return;
+        epoch++;
+        near.clear(); far.clear(); missing.clear(); inFlight.clear(); enabled = false;
+    }
+
     public static synchronized void tick(Object level) {
+        if (!TfcCompatConfig.enabled()) { disable(); return; }
         Minecraft minecraft = Minecraft.getInstance();
         resetWorld(level);
         var server = minecraft.getSingleplayerServer();
-        enabled = world != null && minecraft.level == world && server != null;
+        enabled = world != null && minecraft.level == world && server != null && TfcCompatConfig.enabled();
         if (!enabled) return;
         var camera = minecraft.gameRenderer.getMainCamera().getPosition();
         cameraX = net.minecraft.util.Mth.floor(camera.x) >> 4;

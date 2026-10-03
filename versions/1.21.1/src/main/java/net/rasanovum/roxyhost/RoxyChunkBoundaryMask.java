@@ -1,6 +1,7 @@
 package net.rasanovum.roxyhost;
 
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionManager;
@@ -16,7 +17,7 @@ public final class RoxyChunkBoundaryMask {
     private final LongOpenHashSet additions;
     private final LongOpenHashSet removals;
     private final LongOpenHashSet visible = new LongOpenHashSet();
-    private final LongOpenHashSet obsolete = new LongOpenHashSet();
+    private final LongArrayList obsolete = new LongArrayList();
     private final Method addPosition;
     private final Method removePosition;
     private final float clearDepth;
@@ -71,19 +72,36 @@ public final class RoxyChunkBoundaryMask {
     private void applyVisible(Object viewport) throws ReflectiveOperationException {
         additions.clear();
         removals.clear();
+        if (positions.size() == visible.size() && containsEveryVisiblePosition()) {
+            clearDepthIfEmpty(viewport);
+            return;
+        }
         obsolete.clear();
         var current = positions.keySet().iterator();
         while (current.hasNext()) {
             long position = current.nextLong();
             if (!visible.contains(position)) obsolete.add(position);
         }
-        var removed = obsolete.iterator();
-        while (removed.hasNext()) removePosition.invoke(renderer, removed.nextLong());
+        for (int index = 0; index < obsolete.size(); index++) {
+            removePosition.invoke(renderer, obsolete.getLong(index));
+        }
         var added = visible.iterator();
         while (added.hasNext()) {
             long position = added.nextLong();
             if (!positions.containsKey(position)) addPosition.invoke(renderer, position);
         }
+        clearDepthIfEmpty(viewport);
+    }
+
+    private boolean containsEveryVisiblePosition() {
+        var current = visible.iterator();
+        while (current.hasNext()) {
+            if (!positions.containsKey(current.nextLong())) return false;
+        }
+        return true;
+    }
+
+    private void clearDepthIfEmpty(Object viewport) throws ReflectiveOperationException {
         if (positions.isEmpty()) {
             if (depthBuffer == null) {
                 depthBuffer = field(viewport.getClass(), "depthBoundingBuffer");

@@ -7,6 +7,7 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.Level;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.rasanovum.roxy.tfc.TfcCompatConfig;
 import org.slf4j.LoggerFactory;
 
 /** Reads the versioned TFC 4.2.x chunk attachment without constructing a chunk. */
@@ -23,6 +24,7 @@ public final class RoxyTfcImport {
     private RoxyTfcImport() {}
 
     public static void captureChunk(Object targetEngine, LevelChunk chunk) {
+        if (!TfcCompatConfig.enabled()) return;
         if (chunk == null || chunkCaptureAbsent) return;
         try {
             ChunkCapture access = chunkCapture;
@@ -102,6 +104,7 @@ public final class RoxyTfcImport {
     }
 
     public static void capture(Object importer, Object value) {
+        if (!TfcCompatConfig.enabled()) return;
         float[] snapshot = decode(value);
         if (snapshot == null) return;
         CompoundTag root = (CompoundTag) value;

@@ -12,6 +12,7 @@ public final class RoxyTfcTickMixin {
     @Inject(method = "tick", at = @At("TAIL"))
     private void roxy$seasonalUpdates(CallbackInfo ci) {
         Minecraft minecraft=(Minecraft)(Object)this;
+        TfcVoxyBridge.updateEnabledState(minecraft.level);
         if(minecraft.level==null || !minecraft.isPaused())TfcVoxyBridge.tick(minecraft.level);
     }
 }

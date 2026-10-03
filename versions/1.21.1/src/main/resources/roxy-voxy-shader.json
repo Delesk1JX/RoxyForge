@@ -19,6 +19,7 @@
         "RoxyFogDawnMixin",
         "RoxyFogHorizonMixin",
         "RoxyGameRendererMixin",
+        "RoxyGPUBoosterConfigMixin",
         "RoxyIrisRenderTargetMixin",
         "RoxyIrisLevelRendererMixin"
   ],

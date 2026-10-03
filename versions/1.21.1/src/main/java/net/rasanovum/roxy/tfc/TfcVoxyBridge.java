@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.*;
-import net.neoforged.fml.loading.LoadingModList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +33,10 @@ public final class TfcVoxyBridge {
     private static volatile TfcClimateStore climate;
     private static Adapter adapter;
     private static boolean warned;
+    private static boolean compatWasEnabled;
+    private static boolean configSeen;
+    private static boolean rendererReloadRequested;
+    private static volatile boolean compatFastEnabled;
     private static volatile long ticks;
     private static long day=Long.MIN_VALUE, month=Long.MIN_VALUE;
     private static long lastCalendarTick=Long.MIN_VALUE;
@@ -52,24 +55,22 @@ public final class TfcVoxyBridge {
 
     private TfcVoxyBridge() {}
 
-    private static boolean installed() {
-        var mods=LoadingModList.get();
-        return mods!=null && mods.getModFileById("tfc")!=null;
-    }
-
     private static Adapter adapter(ClassLoader loader) throws ReflectiveOperationException {
         if(adapter==null) adapter=new Adapter(Class.forName("net.rasanovum.roxyhost.tfc.RoxyTfcAdapter",true,loader));
         return adapter;
     }
 
     public static int[] initializeFactory(Object factory,int[] mappings) {
-        if(!installed())return mappings;
+        boolean enabled=TfcCompatConfig.enabled();
+        compatFastEnabled=enabled;
+        if(!enabled)return mappings;
         try {
             Adapter api=adapter(factory.getClass().getClassLoader());
             if(!(boolean)api.available.invoke(null))return mappings;
             int[] expanded=Arrays.copyOf(mappings,FIRST_VARIANT+MAX_VARIANTS);
             Arrays.fill(expanded,FIRST_VARIANT,expanded.length,-1);
             active=new Factory(factory,expanded,api.level.invoke(null));
+            compatWasEnabled=true;
             REFRESH.reset();
             forceMeshes=false;progressWasWorking=false;
             progressEpoch=Long.MIN_VALUE;progressScan=null;progressChunks.clear();progressDone=0;
@@ -154,6 +155,7 @@ public final class TfcVoxyBridge {
     }
 
     public static int resolveModel(int nativeModel,Object renderFactory,long voxel,int index) {
+        if(!compatFastEnabled)return nativeModel;
         Mesh mesh=MESH.get();
         if(mesh==null || mesh.factory!=active || nativeModel<0)return nativeModel;
         return select(mesh,(int)(voxel>>>27)&0xfffff,nativeModel,index&31,index>>>10,(index>>>5)&31);
@@ -166,6 +168,7 @@ public final class TfcVoxyBridge {
     }
 
     public static int neighborResolved(Object modelFactory,int canonical,int original,Object renderFactory) {
+        if(!compatFastEnabled)return original;
         Mesh mesh=MESH.get();
         if(mesh==null || mesh.factory!=active)return original;
         int face=mesh.neighbor>>>10, a=mesh.neighbor&31,b=(mesh.neighbor>>>5)&31;
@@ -253,12 +256,13 @@ public final class TfcVoxyBridge {
     }
 
     public static synchronized void capture(Object level,int x,int z,float[] snapshot) {
-        if(level==null)return;
+        if(!TfcCompatConfig.enabled() || level==null)return;
         ensureWorld(level);
         captureSnapshot(x,z,snapshot);
     }
 
     public static synchronized void captureImported(Object engine,int x,int z,float[] snapshot) {
+        if(!TfcCompatConfig.enabled())return;
         Factory factory=active;
         if(engine==null || factory==null || climate==null || world!=factory.level)return;
         try {
@@ -292,7 +296,12 @@ public final class TfcVoxyBridge {
     }
 
     public static void tick(Object level) {
-        if(!installed())return;
+        if(!TfcCompatConfig.enabled()) {
+            updateEnabledState(level);
+            tickDisabled(level);
+            return;
+        }
+        updateEnabledState(level);
         ensureWorld(level);
         Factory factory=active;
         if(level==null || factory==null || factory.level!=level)return;
@@ -401,6 +410,47 @@ public final class TfcVoxyBridge {
         } catch(ReflectiveOperationException | RuntimeException failure) { warn(failure); }
     }
 
+    /**
+     * Applies a Sodium Apply transition even while Minecraft is paused. The host lifecycle
+     * should call this before processing renderer reloads and may use the return value to
+     * defer a Voxy renderer recreation.
+     */
+    public static synchronized boolean updateEnabledState(Object level) {
+        boolean enabled=TfcCompatConfig.enabled();
+        compatFastEnabled=enabled;
+        if(enabled)ensureWorld(level);
+        if(!configSeen) {
+            configSeen=true;
+            if(!enabled && compatWasEnabled) {
+                disableCompat();
+                rendererReloadRequested=true;
+                return true;
+            }
+            return false;
+        }
+        if(!enabled) {
+            boolean changed=compatWasEnabled;
+            disableCompat();
+            if(changed)rendererReloadRequested=true;
+            return changed || rendererReloadRequested;
+        }
+        if(!compatWasEnabled) {
+            enableCompat();
+            rendererReloadRequested=true;
+            return true;
+        }
+        return rendererReloadRequested;
+    }
+
+    /** Completes a renderer recreation requested by {@link #updateEnabledState(Object)}. */
+    public static synchronized void rendererReloaded() {
+        rendererReloadRequested=false;
+        if(!TfcCompatConfig.enabled() || world==null) {
+            active=null;
+            REFRESH.reset();
+        }
+    }
+
     private static boolean commitReady(Factory factory,Entry entry) {
         Variant variant=entry.pending;
         if(variant==null || entry.retired || factory!=active){entry.waiting=false;return true;}
@@ -458,7 +508,7 @@ public final class TfcVoxyBridge {
     public static String status() {
         Factory factory=active;
         TfcClimateStore store=climate;
-        if(factory==null || world!=factory.level)return "TFC seasonal LoDs: inactive";
+        if(!TfcCompatConfig.enabled() || factory==null || world!=factory.level)return "TFC seasonal LoDs: inactive";
         return "TFC seasonal LoDs: day="+day+", revision="+revision
                 +", climate="+(store==null?0:store.size())+", contexts="+factory.contexts.size()
                 +", fallbacks="+factory.fallbacks.size()
@@ -469,6 +519,7 @@ public final class TfcVoxyBridge {
     }
 
     public static boolean forceRefresh() {
+        if(!TfcCompatConfig.enabled())return false;
         Factory factory=active;
         if(factory==null || world!=factory.level || adapter==null)return false;
         try {
@@ -544,6 +595,59 @@ public final class TfcVoxyBridge {
     public static int quantize(int rgb) {
         int r=(rgb>>>16)&255,g=(rgb>>>8)&255,b=rgb&255;
         return Math.min(255,(r+4)/8*8)<<16 | Math.min(255,(g+4)/8*8)<<8 | Math.min(255,(b+4)/8*8);
+    }
+
+    private static synchronized void enableCompat() {
+        compatWasEnabled=true;
+        compatFastEnabled=true;
+        Factory factory=active;
+        if(factory==null)return;
+        revision++;
+        forceMeshes=true;
+        progressStarted=System.nanoTime();progressScan=null;progressChunks.clear();progressDone=0;
+        sweep=factory.contexts.values().iterator();sweepNext=null;
+        for(Entry entry:factory.contexts.values()) { entry.revision=-1; entry.evaluatedDirty=0; entry.pending=null; entry.waiting=false; }
+        factory.fallbackSweep=null;factory.unknownScan=null;factory.waiting.clear();
+    }
+
+    private static synchronized void disableCompat() {
+        if(!compatWasEnabled && !TfcCompatConfig.enabled())return;
+        compatWasEnabled=false;
+        compatFastEnabled=false;
+        BAKE.remove();MESH.remove();MESH_STAMP.remove();
+        Factory factory=active;
+        if(factory!=null) {
+            // Keep the factory and scheduler alive long enough to remesh resident sections
+            // with their canonical IDs. The next factory rebuild discards this state.
+            REFRESH.requestResidentSweep();
+            Entry entry;
+            while((entry=factory.queue.poll())!=null){entry.queued.set(false);factory.queueSlots.release();}
+            while((entry=factory.fallbackQueue.poll())!=null){entry.queued.set(false);factory.fallbackSlots.release();}
+            for(Entry value:factory.contexts.values()) {
+                value.pending=null;value.waiting=false;value.model=-1;value.revision=-1;
+            }
+            for(Entry value:factory.fallbacks.values()) {
+                value.pending=null;value.waiting=false;value.model=-1;value.revision=-1;
+            }
+            factory.fallbackSweep=null;factory.unknownScan=null;
+            factory.waiting.clear();
+        }
+        progress=new long[7];progressScan=null;progressChunks.clear();progressDone=0;
+        forceMeshes=false;sweep=null;sweepNext=null;dirtyEntries=null;dirtyNext=null;pruning=null;
+        dirtyChunks.clear();dirtyOverflow.set(false);climateArrived.set(false);
+        if(adapter!=null)try{adapter.tickClimate.invoke(null);}catch(ReflectiveOperationException|RuntimeException ignored){}
+        if(climate!=null)climate.close();
+        climate=null;world=null;
+    }
+
+    private static void tickDisabled(Object level) {
+        Factory factory=active;
+        if(factory==null || level==null || factory.level!=level)return;
+        try {
+            Object renderer=Class.forName("me.cortex.voxy.client.core.IGetVoxyRenderSystem",false,level.getClass().getClassLoader())
+                    .getMethod("getNullable").invoke(null);
+            REFRESH.tick(renderer);
+        } catch(ReflectiveOperationException|RuntimeException ignored) {}
     }
 
     private static Object field(Object object,String name) throws ReflectiveOperationException {

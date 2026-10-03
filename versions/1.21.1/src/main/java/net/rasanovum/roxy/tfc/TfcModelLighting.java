@@ -8,6 +8,6 @@ public final class TfcModelLighting {
     }
 
     public static int flags(int flags) {
-        return TfcVoxyBridge.isBakingVariant() ? flags | 16 : flags;
+        return TfcVoxyBridge.isBakingVariant() ? flags | 32 : flags;
     }
 }

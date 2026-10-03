@@ -9,6 +9,7 @@ public final class RoxyFramebufferBridge {
     private static final int DRAW_FRAMEBUFFER_BINDING = 0x8CA6;
     private static final int READ_FRAMEBUFFER_BINDING = 0x8CAA;
     private static final ThreadLocal<FramebufferState> SAVED_STATE = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> ADAPTER_BOUND = new ThreadLocal<>();
     private static int adapterFramebuffer;
 
     private RoxyFramebufferBridge() {
@@ -28,7 +29,9 @@ public final class RoxyFramebufferBridge {
         GL11.glGetIntegerv(GL11.GL_SCISSOR_BOX, scissorBox);
         SAVED_STATE.set(new FramebufferState(drawFramebuffer, drawBuffers, viewport, scissorBox,
                 GL11.glIsEnabled(GL11.GL_SCISSOR_TEST)));
-        if (drawFramebuffer != 0 && bindAdapter(drawBuffers)) {
+        boolean adapterBound = drawFramebuffer != 0 && bindAdapter(drawBuffers);
+        ADAPTER_BOUND.set(adapterBound);
+        if (adapterBound) {
             GL11.glViewport(0, 0, textureWidth(), textureHeight());
         }
         return (Integer.toUnsignedLong(readFramebuffer) << 32) | Integer.toUnsignedLong(drawFramebuffer);
@@ -78,6 +81,7 @@ public final class RoxyFramebufferBridge {
     }
 
     public static void useMainColorAttachment() {
+        if (Boolean.TRUE.equals(ADAPTER_BOUND.get())) return;
         if (GL11.glGetInteger(DRAW_FRAMEBUFFER_BINDING) != 0) {
             GL20.glDrawBuffers(GL30.GL_COLOR_ATTACHMENT0);
         }
@@ -88,6 +92,7 @@ public final class RoxyFramebufferBridge {
         GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, drawFramebuffer);
         FramebufferState state = SAVED_STATE.get();
         SAVED_STATE.remove();
+        ADAPTER_BOUND.remove();
         if (state != null && state.drawFramebuffer == drawFramebuffer && drawFramebuffer != 0) {
             GL20.glDrawBuffers(state.drawBuffers);
         }

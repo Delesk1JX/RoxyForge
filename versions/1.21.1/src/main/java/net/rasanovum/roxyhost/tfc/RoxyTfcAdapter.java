@@ -9,6 +9,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.rasanovum.roxy.tfc.TfcCompatConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +47,7 @@ public final class RoxyTfcAdapter {
     private RoxyTfcAdapter() {}
 
     public static synchronized boolean available() {
+        if (!TfcCompatConfig.enabled()) return false;
         if (attempted) return available;
         attempted = true;
         try {
@@ -95,7 +97,8 @@ public final class RoxyTfcAdapter {
     }
 
     public static boolean isLeaf(Object state) {
-        return available() && state instanceof BlockState blockState && leafClass.isInstance(blockState.getBlock());
+        return TfcCompatConfig.enabled() && available()
+                && state instanceof BlockState blockState && leafClass.isInstance(blockState.getBlock());
     }
 
     public static Object normalize(Object state) {
@@ -107,13 +110,13 @@ public final class RoxyTfcAdapter {
     }
 
     public static long calendarDay() {
-        if (!available()) return Long.MIN_VALUE;
+        if (!TfcCompatConfig.enabled() || !available()) return Long.MIN_VALUE;
         try { return ((Number) day.invoke(calendar)).longValue(); }
         catch (ReflectiveOperationException failure) { warn(failure); return Long.MIN_VALUE; }
     }
 
     public static long[] calendarSnapshot() {
-        if (!available()) return null;
+        if (!TfcCompatConfig.enabled() || !available()) return null;
         try { return new long[]{((Number) calendarTicks.invoke(calendar)).longValue(),
                 ((Number) monthDays.invoke(calendar)).longValue()}; }
         catch (ReflectiveOperationException failure) { warn(failure); return null; }
@@ -121,9 +124,16 @@ public final class RoxyTfcAdapter {
 
     public static Object clientLevel() { return Minecraft.getInstance().level; }
 
-    public static void requestClimate(Object level, int x, int z) { RoxyTfcBackfill.request(level, x, z); }
-    public static void tickClimate() { RoxyTfcBackfill.tick(); }
-    public static int pendingClimate() { return RoxyTfcBackfill.pendingCount(); }
+    public static void requestClimate(Object level, int x, int z) {
+        if (TfcCompatConfig.enabled()) RoxyTfcBackfill.request(level, x, z);
+    }
+    public static void tickClimate() {
+        if (TfcCompatConfig.enabled()) RoxyTfcBackfill.tick();
+        else RoxyTfcBackfill.disable();
+    }
+    public static int pendingClimate() {
+        return TfcCompatConfig.enabled() ? RoxyTfcBackfill.pendingCount() : 0;
+    }
 
     public static int[] cameraChunk() {
         var position = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
@@ -131,7 +141,7 @@ public final class RoxyTfcAdapter {
     }
 
     public static Object[] evaluate(Object state, int x, int y, int z, Object climateSnapshot, Object calendarSnapshot) {
-        if (!isLeaf(state)) return null;
+        if (!TfcCompatConfig.enabled() || !isLeaf(state)) return null;
         long[] time = calendarSnapshot instanceof long[] values && values.length == 2
                 && values[1] > 0 && values[1] <= Integer.MAX_VALUE ? values : null;
         float[] snapshot = snapshotHookInstalled && calendarHookInstalled && time != null
@@ -174,16 +184,16 @@ public final class RoxyTfcAdapter {
         }
     }
 
-    public static Object scopedClimate() { return CLIMATE.get(); }
+    public static Object scopedClimate() { return TfcCompatConfig.enabled() ? CLIMATE.get() : null; }
 
     public static void snapshotHookInstalled() { snapshotHookInstalled = true; }
 
-    public static long[] scopedCalendar() { return CALENDAR.get(); }
+    public static long[] scopedCalendar() { return TfcCompatConfig.enabled() ? CALENDAR.get() : null; }
 
     public static void calendarHookInstalled() { calendarHookInstalled = true; }
 
     public static void capture(Object data) {
-        if (CLIMATE.get() != null || !available()) return;
+        if (!TfcCompatConfig.enabled() || CLIMATE.get() != null || !available()) return;
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null || !minecraft.isSameThread()) return;
         try {

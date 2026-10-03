@@ -56,10 +56,7 @@ final class RoxyTfcBytecodePatch implements Opcodes {
                         lightingKeys++;
                     }
                     if (invocation.owner.equals("org/lwjgl/system/MemoryUtil") && invocation.name.equals("memPutInt")
-                            && invocation.desc.equals("(JI)V") && insn.getPrevious() instanceof VarInsnNode value
-                            && value.getOpcode() == ILOAD && value.var == 24
-                            && value.getPrevious() instanceof VarInsnNode address
-                            && address.getOpcode() == LLOAD && address.var == 15) {
+                            && invocation.desc.equals("(JI)V") && isModelFlagsWrite(insn)) {
                         method.instructions.insertBefore(insn, new MethodInsnNode(INVOKESTATIC,
                                 "net/rasanovum/roxy/tfc/TfcModelLighting", "flags", "(I)I", false));
                         lightingFlags++;
@@ -118,6 +115,29 @@ final class RoxyTfcBytecodePatch implements Opcodes {
         require(initialized == 1 && resolved == 1 && scoped == 1 && uploading == 1 && committed == 1, "model factory");
         require(lightingKeys == 1 && lightingFlags == 1, "TFC ambient occlusion metadata");
         wrapScope(node, bake, "endBake", false);
+    }
+
+    private static boolean isModelFlagsWrite(AbstractInsnNode write) {
+        AbstractInsnNode value = previousInstruction(write);
+        if (value instanceof MethodInsnNode ice && ice.getOpcode() == INVOKESTATIC
+                && ice.owner.equals("net/rasanovum/roxy/bridge/RoxyIceModelBridge")
+                && ice.name.equals("addIceBackfaceFlag") && ice.desc.equals("(Ljava/lang/Object;I)I")) {
+            AbstractInsnNode swap = previousInstruction(ice);
+            AbstractInsnNode state = previousInstruction(swap);
+            if (swap == null || swap.getOpcode() != SWAP || !(state instanceof VarInsnNode load)
+                    || load.getOpcode() != ALOAD || load.var != 2) return false;
+            value = previousInstruction(state);
+        }
+        AbstractInsnNode address = previousInstruction(value);
+        return value instanceof VarInsnNode flags && flags.getOpcode() == ILOAD && flags.var == 24
+                && address instanceof VarInsnNode pointer && pointer.getOpcode() == LLOAD && pointer.var == 15;
+    }
+
+    private static AbstractInsnNode previousInstruction(AbstractInsnNode instruction) {
+        if (instruction == null) return null;
+        AbstractInsnNode previous = instruction.getPrevious();
+        while (previous != null && previous.getOpcode() < 0) previous = previous.getPrevious();
+        return previous;
     }
 
     private static void patchMesh(ClassNode node) {

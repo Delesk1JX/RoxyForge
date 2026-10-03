@@ -14,6 +14,7 @@ import net.rasanovum.roxy.patch.RoxyVoxyLifecycle;
 import net.rasanovum.roxy.loader.RoxyFabricRuntime;
 import net.rasanovum.roxy.loader.RoxyCrashReportHeader;
 import net.rasanovum.roxy.client.RoxyClientWarnings;
+import net.rasanovum.roxy.tfc.TfcCompatConfig;
 
 @Mod("voxy")
 public final class RoxyVoxyNeoForge {
@@ -33,14 +34,15 @@ public final class RoxyVoxyNeoForge {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void onRegisterClientCommands(RegisterClientCommandsEvent event) {
-        event.getDispatcher().register(net.minecraft.commands.Commands.literal("roxy")
+        if (TfcCompatConfig.installed()) event.getDispatcher().register(net.minecraft.commands.Commands.literal("roxy")
                 .then(net.minecraft.commands.Commands.literal("tfc")
                         .then(net.minecraft.commands.Commands.literal("status").executes(context -> {
                             context.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal(
                                     net.rasanovum.roxy.tfc.TfcVoxyBridge.status()), false);
                             return 1;
                         }))
-                        .then(net.minecraft.commands.Commands.literal("refresh").executes(context -> {
+                        .then(net.minecraft.commands.Commands.literal("refresh")
+                                .requires(source -> TfcCompatConfig.enabled()).executes(context -> {
                             net.rasanovum.roxyhost.tfc.RoxyTfcBackfill.retryMissing();
                             net.rasanovum.roxy.tfc.TfcVoxyBridge.forceRefresh();
                             context.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal(
@@ -59,13 +61,13 @@ public final class RoxyVoxyNeoForge {
         }
     }
 
-
     private void onRenderLevelStage(RenderLevelStageEvent event) {
         RoxyPowerGridCompat.render(event);
     }
 
     private void onClientTick(ClientTickEvent.Post event) {
         RoxyVoxyLifecycle.tick();
+        RoxyPowerGridCompat.tick();
         net.rasanovum.roxyhost.tfc.RoxyTfcProgress.tick();
     }
 
