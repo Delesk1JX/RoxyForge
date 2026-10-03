@@ -14,6 +14,7 @@ import net.rasanovum.roxy.patch.RoxyVoxyLifecycle;
 import net.rasanovum.roxy.loader.RoxyFabricRuntime;
 import net.rasanovum.roxy.loader.RoxyCrashReportHeader;
 import net.rasanovum.roxy.client.RoxyClientWarnings;
+import net.rasanovum.roxy.tfc.TfcCompatConfig;
 
 @Mod("voxy")
 public final class RoxyVoxyNeoForge {
@@ -33,6 +34,22 @@ public final class RoxyVoxyNeoForge {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void onRegisterClientCommands(RegisterClientCommandsEvent event) {
+        if (TfcCompatConfig.installed()) event.getDispatcher().register(net.minecraft.commands.Commands.literal("roxy")
+                .then(net.minecraft.commands.Commands.literal("tfc")
+                        .then(net.minecraft.commands.Commands.literal("status").executes(context -> {
+                            context.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal(
+                                    net.rasanovum.roxy.tfc.TfcVoxyBridge.status()), false);
+                            return 1;
+                        }))
+                        .then(net.minecraft.commands.Commands.literal("refresh")
+                                .requires(source -> TfcCompatConfig.enabled()).executes(context -> {
+                            net.rasanovum.roxyhost.tfc.RoxyTfcBackfill.retryMissing();
+                            net.rasanovum.roxy.tfc.TfcVoxyBridge.forceRefresh();
+                            context.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal(
+                                    "Requested a background TFC leaf appearance refresh. "
+                                            + net.rasanovum.roxy.tfc.TfcVoxyBridge.status()), false);
+                            return 1;
+                        }))));
         if (event.getDispatcher().getRoot().getChild("voxy") == null) {
             try {
                 Class<?> commands = Class.forName("me.cortex.voxy.client.VoxyCommands");
@@ -51,6 +68,7 @@ public final class RoxyVoxyNeoForge {
     private void onClientTick(ClientTickEvent.Post event) {
         RoxyVoxyLifecycle.tick();
         RoxyPowerGridCompat.tick();
+        net.rasanovum.roxyhost.tfc.RoxyTfcProgress.tick();
     }
 
     private void onEntityLeaveLevel(EntityLeaveLevelEvent event) {
