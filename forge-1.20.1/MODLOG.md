@@ -130,24 +130,18 @@ leaving the upstream NeoForge build untouched. Build with:
         implementations.
       Result: **UNRESOLVED classes 0**, and the link checker now sees our jar, so it measures what the
       game will see.
-- [~] **M4b** partially done. Current state of the link checker: **0 unresolved classes, 141 methods,
-      55 fields** - all of them on real Minecraft classes, for example
-      `Minecraft.method_1548()Lnet/minecraft/client/User;`, `Camera.method_71156()Vec3`,
-      `WorldVersion.comp_4026()`, `ClientPacketListener.method_45734()ServerData`.
-
-      What was tried:
-      - `propose_member_aliases.py` ranks 1.20.1 candidates for every unresolved member by signature
-        (exact descriptor, then shape, then arity, then return type). It shows most of them have an exact
-        descriptor match, so the mappings are missing rather than impossible.
-      - a second matching stage that keys on **mojmap identity** instead of the intermediary name was
-        added and then removed again: it grew the mapping by ~19 000 entries overall but contributed
-        nothing for Voxy, because the diagnosis is that obfuscated member names are only unique *per
-        owner*, so `ac` as a field name and `ac` as a class name deobfuscate to completely different
-        things. Fixing that properly needs the member maps to be scoped per owner class on both sides
-        (1.21.11 and 1.20.1), which is where this stopped.
-
-      So the honest remaining work for M4b is: scope member deobfuscation per owner class, then curate
-      whatever is still left into structural patches.
+- [~] **M4b** still open, but the blocker is diagnosed. What this round fixed:
+      the deobfuscation of **members** has to be scoped by owner class, because obfuscated member names
+      are only unique inside their class - the same short name (`ac`) is a class in one place and a field
+      in another and deobfuscates to completely different things. With that scope in place the mojmap
+      matching stage became valid: the mapping grew from 21 705 to **38 304 verified entries with 0
+      wrong** (16 599 of them matched by mojmap identity), and Voxy's member coverage went 11.98% ->
+      **27.86%**. Unresolved: 133 methods and 55 fields, all on real Minecraft classes.
+      Also learned: the Mojang **client** SRG jar is not the whole API surface. Classes such as
+      `WorldVersion`, `ChunkResult` and `PalettedContainerFactory` are server-side, and the Mojang server
+      jar ships **obfuscated**, so it has to be deobfuscated with the 1.20.1 mojmap before indexing
+      (build_mappings.py takes --server-jar for this). The link checker still only indexes the client
+      jar, so its unresolved list can contain server-side false positives; that is the next fix.
 - [ ] **M4c** bridges for Embeddium instead of Sodium.
 - [ ] **M5** feed the remapped jar into the in-game path (SPI) and get the launch stable.
 - [ ] **M6** run in 1.20.1 Forge, verify LODs, screenshots.

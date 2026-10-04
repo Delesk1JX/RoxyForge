@@ -344,7 +344,7 @@ def _primitives(descriptor: str) -> str:
 
 # --------------------------------------------------------------------------- build
 
-def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path | None = None) -> None:
+def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path | None = None, server_jar: Path | None = None) -> None:
     # Fabric's 1.21.11 tiny maps official <-> intermediary; its 1.20.1 tiny maps obfuscated <-> intermediary,
     # because Mojang mappings did not exist for 1.20.1. Matching the intermediary namespace across the two is
     # what ties 1.21.11 code to 1.20.1 classes.
@@ -427,25 +427,27 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
     # mojmap-level index of 1.20.1: (owner, member name) -> candidates, used when intermediary names differ.
     mojmap_index: dict[tuple[str, str], list[tuple[str, str, str]]] = {}
 
-    # Obfuscated class names and obfuscated member names live in different namespaces: `ac` can be both a
-    # class and a field, and they deobfuscate to completely different things. Keep the two apart.
-    def member_names(mappings: MojangMappings) -> dict[tuple[str, str], str]:
-        result: dict[tuple[str, str], str] = {}
-        for (owner, official_name), obfuscated in mappings.members.items():
-            result[(owner, obfuscated)] = official_name
-        return result
+    # Obfuscated class names and obfuscated member names live in different namespaces: the same short
+    # name can be a class and a field and deobfuscate to completely different things. Member names are
+    # also only unique inside their owner class, so the index is keyed by the official owner as well -
+    # deobfuscating members without that scope silently produces wrong names.
+    def member_index_by_obfuscated(mappings: MojangMappings) -> dict[tuple[str, str], str]:
+        """(official owner, obfuscated member name) -> official member name."""
+        return {(owner, obfuscated): official
+                for (owner, official), obfuscated in mappings.members.items()}
 
-    member_names_1201 = member_names(mojang)
-    member_names_1211 = member_names(MojangMappings.read(new_mojmap)) if new_mojmap.exists() else {}
+    member_index_1201 = member_index_by_obfuscated(mojang)
+    member_index_1211 = (member_index_by_obfuscated(MojangMappings.read(new_mojmap))
+                        if new_mojmap.exists() else {})
 
     def add_mojmap(owner: str, obf_name: str, obf_descriptor: str) -> None:
         official_owner = obf_old_to_official.get(owner)
-        official_name = member_names_1201.get((owner, obf_name))
+        official_name = member_index_1201.get((official_owner, obf_name))
         if official_owner and official_name:
             mojmap_index.setdefault((official_owner, official_name), []).append(
                 (_to_mojmap_descriptor(obf_descriptor, obf_old_to_official), owner, obf_name))
 
-    if new_by_obf:
+    if new_by_obf and member_index_1211:
         new_name_index: dict[tuple[str, str], tuple[str, str]] = {}
         for table in (intermediary_new.methods, intermediary_new.fields):
             for (owner, name, _), (obf_owner, obf_name, _) in table.items():
@@ -460,7 +462,7 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
         """1.21.11 member identity in mojmap terms, used as a second matching key."""
         obf_owner, obf_name = new_name_index.get((owner, name), (None, None))
         official_owner = new_by_obf.get(obf_owner)
-        official_name = member_names_1211.get((obf_owner, obf_name))
+        official_name = member_index_1211.get((official_owner, obf_name))
         if official_owner and official_name:
             return official_owner.replace(".", "/"), official_name
         return None
@@ -494,6 +496,10 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
     if mc_jar and Path(mc_jar).exists():
         from mcindex import JarIndex
         minecraft = JarIndex.read(Path(mc_jar))
+        if server_jar and Path(server_jar).exists():
+            # The Mojang server jar ships obfuscated, so its classes need the 1.20.1 mojmap to be indexed.
+            for facts in JarIndex.read(Path(server_jar), mojang.classes).classes.values():
+                minecraft.classes.setdefault(facts.name, facts)
 
     def resolve(entry, official_owner):
         """(srg name, target descriptor) for a 1.20.1 candidate, or (None, None) when it cannot link."""
@@ -537,6 +543,18 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
                         chosen = ("repaired", srg, target_descriptor)
                         repaired += 1
                         break
+            if chosen is None and new_name_index:
+                # Second chance: the intermediary name itself was renamed between versions, so match on
+                # the mojmap identity of the member instead - same owner, same readable name.
+                identity = mojmap_of_new(owner, name)
+                if identity:
+                    for mojmap_descriptor, obf_owner, obf_name in mojmap_index.get(identity, []):
+                        srg, target_descriptor = resolve((mojmap_descriptor, obf_owner, obf_name),
+                                                         official_owner)
+                        if srg and exists(kind, official_owner, srg, target_descriptor):
+                            chosen = ("mojmap", srg, target_descriptor)
+                            via_mojmap += 1
+                            break
             if chosen is None:
                 if entry is not None and how == "ambiguous":
                     ambiguous.append(f"{kind} {owner}.{name}{descriptor}")
@@ -555,6 +573,10 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
     if mc_jar and Path(mc_jar).exists():
         from mcindex import JarIndex
         minecraft = JarIndex.read(Path(mc_jar))
+        if server_jar and Path(server_jar).exists():
+            # The Mojang server jar ships obfuscated, so its classes need the 1.20.1 mojmap to be indexed.
+            for facts in JarIndex.read(Path(server_jar), mojang.classes).classes.values():
+                minecraft.classes.setdefault(facts.name, facts)
         official_by_intermediary = dict(line.split("\t")[1:] for line in class_lines)
 
         kept_classes = []
@@ -658,9 +680,10 @@ def main() -> None:
     parser.add_argument("--voxy", type=Path, help="Voxy jar to measure coverage against")
     parser.add_argument("--out", type=Path, default=HERE / "roxy-mappings")
     parser.add_argument("--report", type=Path, default=HERE / "coverage-report.json")
-    parser.add_argument("--mc-jar", type=Path, help="Minecraft 1.20.1 SRG jar to validate the mapping against")
+    parser.add_argument("--mc-jar", type=Path, help="Minecraft 1.20.1 SRG client jar to validate the mapping against")
+    parser.add_argument("--server-jar", type=Path, help="obfuscated Minecraft 1.20.1 server jar, for the classes the client jar does not carry")
     args = parser.parse_args()
-    build(args.voxy, args.out, args.report, args.mc_jar)
+    build(args.voxy, args.out, args.report, args.mc_jar, args.server_jar)
 
 
 if __name__ == "__main__":

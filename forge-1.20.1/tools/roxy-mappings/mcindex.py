@@ -108,15 +108,22 @@ class JarIndex:
         self.classes: dict[str, ClassFacts] = {}
 
     @classmethod
-    def read(cls, jar: Path) -> "JarIndex":
+    def read(cls, jar: Path, rename: dict[str, str] | None = None) -> "JarIndex":
+        """Index a jar. `rename` maps obfuscated internal names to official ones, which the Mojang
+        server jar needs: it ships obfuscated, unlike the SRG client jar."""
         index = cls()
         with zipfile.ZipFile(jar) as zf:
             for entry in zf.namelist():
                 if not entry.endswith(".class"):
                     continue
                 facts = read_class(zf.read(entry))
-                if facts is not None and facts.name:
-                    index.classes[facts.name] = facts
+                if facts is None or not facts.name:
+                    continue
+                if rename:
+                    facts.name = rename.get(facts.name, facts.name)
+                    facts.super_name = rename.get(facts.super_name or "", facts.super_name)
+                    facts.interfaces = [rename.get(name, name) for name in facts.interfaces]
+                index.classes[facts.name] = facts
         return index
 
     def has_class(self, internal_name: str) -> bool:
