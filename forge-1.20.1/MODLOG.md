@@ -48,12 +48,29 @@ leaving the upstream NeoForge build untouched. Build with:
   `voxy*.jar` next to our own mod file, copies it with `FMLModType: LIBRARY` in the manifest and hands
   it to `ModFileFactory.FACTORY.build(jar, this, modFile -> null)` - Forge puts it on the module layer
   without creating a mod container. Builds clean.
+- [ ] **M1b** register the copy as a Forge mod file - *in progress, all steps verified one by one*:
+  1. done: Forge discovers the locator - `Found Dependency Locators : (RoxyForgeLocator:0.1.0-forge)`.
+     Dev runs (`gradlew runClient`) do **not** load it: services are read from the classpath and a dev
+     mod lives in the module layer instead, so this has to be verified in the real instance.
+  2. done: the Voxy jar is found and copied; own log at `<gamedir>/roxyforge-locator.log`, because mod
+     discovery runs before log4j and stdout never reaches `latest.log`.
+  3. done: Forge 1.20.1 rejects a mod file with no `mods` list (`InvalidModFileException: Missing
+     ModLoader in file`), and `ModFileInfo` cannot express "no mods" - so the copy gets a generated
+     `META-INF/mods.toml` plus a shim class `net.voxy.Voxy` carrying `@Mod("voxy")`.
+  4. done: the manifest needs `FMLModType`, otherwise FML reports
+     `The following classes are missing, but are reported in the mods.toml: [voxy]`.
+  5. **open**: the copy still has to become a module whose packages are exported. `SimpleJarMetadata`
+     exports nothing (so FML cannot load `net.voxy.Voxy`), and the first `ModuleJarMetadata(target.toUri(),
+     Set.of())` attempt throws `IllegalArgumentException: Unsupported class file major version 2056`.
+     Next: read how `SecureJar.Provider.fromPath` / FML's own mod file scanning builds the metadata.
 - [x] **M2** runtime mappings, built offline by `tools/roxy-mappings/build_mappings.py`.
       Forge 1.20.1 runs with **official class names** (`net/minecraft/world/level/block/state/BlockState`)
       but **SRG members** (`m_7160_`), verified with javap on `forge-1.20.1-47.4.10-client.jar`.
       Chain: Fabric intermediary 1.21.11 -> intermediary 1.20.1 (stable intermediary namespace) ->
       obfuscated -> official (Mojang `client.txt`), members obfuscated -> SRG (Forge `joined.tsrg`).
       Result: 6556 classes, 50 359 members mapped (36 878 exact descriptor matches, 13 481 by name).
+      Gotcha worth remembering: Fabric's 1.20.1 tiny labels its left column "official" although those are
+      obfuscated names, and tiny v1 member lines start with the **owner**, not the name.
 - [x] **M3a** coverage measured against the real `voxy-0.2.16-beta+1.21.11.jar` (hash verified against
       Modrinth): **93.96 % of referenced Minecraft classes (280/298)** and **42.45 % of members (163/384)**.
 - [ ] **M3b** Java remapper that applies the mapping to Voxy's classes.

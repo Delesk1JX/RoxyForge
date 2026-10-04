@@ -2,8 +2,8 @@ package net.rasanovum.roxy.loader;
 
 import cpw.mods.jarhandling.SecureJar;
 import cpw.mods.jarhandling.impl.Jar;
-import cpw.mods.jarhandling.impl.SimpleJarMetadata;
-import net.minecraftforge.forgespi.language.ModFileScanData;
+import cpw.mods.jarhandling.impl.ModuleJarMetadata;
+import net.minecraftforge.fml.loading.moddiscovery.ModFileParser;
 import net.minecraftforge.forgespi.locating.IDependencyLocator;
 import net.minecraftforge.forgespi.locating.IModFile;
 import net.minecraftforge.forgespi.locating.ModFileFactory;
@@ -16,9 +16,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -26,13 +27,11 @@ import java.util.zip.ZipFile;
  * Forge 1.20.1 has no IModFileCandidateLocator / IModFileReader like NeoForge's FML 4, so all three jobs
  * (find the Voxy jar, make it loadable, hand it to the loader) live in this one locator.
  *
- * The jar is copied to a temp folder with {@code FMLModType: LIBRARY} in its manifest and an empty
- * ModFileScanData, so Forge puts it on the module layer without creating a mod container: Voxy is not a
- * Forge mod, RoxyForge drives its Fabric entrypoints itself.
+ * The copy gets a generated META-INF/mods.toml plus one shim class, so Forge treats it as a mod file whose\r?\n * classes are on the module layer - while Voxy's own Fabric entrypoints stay untouched and are driven by\r?\n * RoxyForge itself.
  */
 public final class RoxyForgeDependencyLocator implements IDependencyLocator {
     public static final String VOXY_JAR_PREFIX = "voxy";
-    private static final String VOXY_MOD_ID = "voxy";
+    private static final List<String> SHIM_CLASSES = List.of("net/voxy/Voxy.class");
     private boolean done;
 
     @Override
@@ -41,27 +40,67 @@ public final class RoxyForgeDependencyLocator implements IDependencyLocator {
         if (done) {
             return found;
         }
-        for (IModFile mod : loadedMods) {
-            Path self = mod.getFilePath();
-            if (self == null) {
-                continue;
+        try {
+            for (IModFile mod : loadedMods) {
+                Path self = mod.getFilePath();
+                if (self == null) {
+                    continue;
+                }
+                Path source = findVoxyJar(self.getParent());
+                if (source == null) {
+                    source = findVoxyJar(workingDirectoryMods());
+                }
+                if (source == null) {
+                    continue;
+                }
+                done = true;
+                try {
+                    IModFile registered = registerVoxy(source);
+                    found.add(registered);
+                    trace("registered Voxy " + source.getFileName() + " as a library mod file");
+                } catch (Throwable problem) {
+                    trace("could not register Voxy " + source.getFileName() + ": " + problem);
+                }
+                break;
             }
-            Path source = findVoxyJar(self.getParent());
-            if (source == null) {
-                continue;
+            if (!done) {
+                trace("no voxy*.jar next to the RoxyForge jar or in " + Path.of("mods").toAbsolutePath());
             }
-            done = true;
-            try {
-                IModFile registered = registerVoxy(source);
-                found.add(registered);
-                System.out.println("RoxyForge: registered Voxy " + source.getFileName()
-                        + " as a library mod file");
-            } catch (IOException | RuntimeException problem) {
-                System.out.println("RoxyForge: could not register Voxy " + source.getFileName() + ": " + problem);
-            }
-            break;
+        } catch (Throwable failure) {
+            trace("scanMods failed: " + failure);
         }
         return found;
+    }
+
+    /**
+     * Mod discovery runs before log4j exists, so stdout is never flushed to latest.log. Write our own
+     * line next to the game directory instead - it is the only way to see why Voxy did or did not load.
+     */
+    static void trace(String message) {
+        String line = "[roxyforge] " + message;
+        System.out.println(line);
+        try {
+            Path gameDirectory = Path.of("").toAbsolutePath();
+            Files.createDirectories(gameDirectory);
+            Files.writeString(gameDirectory.resolve("roxyforge-locator.log"),
+                    line + System.lineSeparator(),
+                    StandardCharsets.UTF_8,
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.APPEND);
+        } catch (IOException ignored) {
+        }
+    }
+
+    /** Dev runs launch with the project directory as the working directory and keep mods in mods/. */
+    private static Path workingDirectoryMods() {
+        String override = System.getProperty("roxyforge.voxy");
+        if (override != null && !override.isBlank()) {
+            Path configured = Path.of(override);
+            if (Files.isRegularFile(configured)) {
+                return configured.getParent();
+            }
+        }
+        return Path.of("mods");
     }
 
     @Override
@@ -105,44 +144,27 @@ public final class RoxyForgeDependencyLocator implements IDependencyLocator {
         Path working = Files.createTempDirectory("roxyforge");
         Path target = working.resolve(source.getFileName().toString().toLowerCase(Locale.ROOT));
         copyAsLibrary(source, target);
-        SecureJar secureJar = secureJar(target);
-        // No IModFileInfo: the file carries no mod to construct, only classes for the module layer.
-        return ModFileFactory.FACTORY.build(secureJar, this, modFile -> null);
-    }
-
-    private static SecureJar secureJar(Path jar) throws IOException {
-        Manifest manifest = readManifest(jar);
-        return new Jar(
-                () -> manifest,
-                secure -> new SimpleJarMetadata("roxyforge", manifest.getMainAttributes().getValue("RoxyForge-Original"),
-                        java.util.Set.of(), List.of()),
+        SecureJar secureJar = new Jar(
+                () -> manifestFor(source),
+                secure -> new ModuleJarMetadata(target.toUri(), Set.of()),
                 (name, size) -> true,
-                jar);
+                target);
+        trace("secure jar built for " + target.getFileName());
+        IModFile file = ModFileFactory.FACTORY.build(secureJar, this, ModFileParser::modsTomlParser);
+        trace("mod file ready: " + file.getFilePath() + " type=" + file.getType()
+                + " mods=" + file.getModInfos());
+        return file;
     }
 
-    private static Manifest readManifest(Path jar) throws IOException {
-        try (ZipFile zip = new ZipFile(jar.toFile())) {
-            ZipEntry entry = zip.getEntry("META-INF/MANIFEST.MF");
-            if (entry == null) {
-                return new Manifest();
-            }
-            try (InputStream input = zip.getInputStream(entry)) {
-                return new Manifest(input);
-            }
-        }
-    }
+
 
     private static void copyAsLibrary(Path source, Path target) throws IOException {
         Manifest manifest = new Manifest();
         manifest.getMainAttributes().putValue("Manifest-Version", "1.0");
-        manifest.getMainAttributes().putValue("FMLModType", "LIBRARY");
+        manifest.getMainAttributes().putValue("FMLModType", "MOD");
         manifest.getMainAttributes().putValue("RoxyForge-Original", source.getFileName().toString());
-
         try (ZipFile zip = new ZipFile(source.toFile());
              JarOutputStream out = new JarOutputStream(Files.newOutputStream(target), manifest)) {
-            out.putNextEntry(new JarEntry("META-INF/voxy-fabric.json"));
-            out.write(voxyMarker(source).getBytes(StandardCharsets.UTF_8));
-            out.closeEntry();
             var entries = zip.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
@@ -155,17 +177,80 @@ public final class RoxyForgeDependencyLocator implements IDependencyLocator {
                 }
                 out.closeEntry();
             }
+            addModsToml(out, source);
+            for (String shim : SHIM_CLASSES) {
+                out.putNextEntry(new JarEntry(shim));
+                try (InputStream input = shimBytes(shim)) {
+                    input.transferTo(out);
+                }
+                out.closeEntry();
+            }
         }
+    }
+
+    private static Manifest manifestFor(Path source) {
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().putValue("Manifest-Version", "1.0");
+        manifest.getMainAttributes().putValue("FMLModType", "MOD");
+        manifest.getMainAttributes().putValue("RoxyForge-Original", source.getFileName().toString());
+        return manifest;
+    }
+
+    /** Forge needs a mods.toml with at least one [[mods]] entry before it will load a file. */
+    private static void addModsToml(JarOutputStream out, Path source) throws IOException {
+        out.putNextEntry(new JarEntry("META-INF/mods.toml"));
+        out.write(("modLoader = \"javafml\"\n"
+                + "loaderVersion = \"[47,)\"\n"
+                + "license = \"All Rights Reserved (Voxy is not redistributed by RoxyForge)\"\n"
+                + "\n"
+                + "[[mods]]\n"
+                + "modId = \"voxy\"\n"
+                + "version = \"" + versionOf(source) + "\"\n"
+                + "displayName = \"Voxy (loaded by RoxyForge)\"\n"
+                + "\n"
+                + "[[dependencies.voxy]]\n"
+                + "modId = \"minecraft\"\n"
+                + "mandatory = true\n"
+                + "versionRange = \"[1.20.1,1.20.2)\"\n"
+                + "ordering = \"AFTER\"\n"
+                + "side = \"CLIENT\"\n").getBytes(StandardCharsets.UTF_8));
+        out.closeEntry();
+    }
+
+    private static String versionOf(Path source) throws IOException {
+        try (ZipFile zip = new ZipFile(source.toFile())) {
+            ZipEntry entry = zip.getEntry("fabric.mod.json");
+            if (entry == null) {
+                return "0.0.0";
+            }
+            try (InputStream input = zip.getInputStream(entry)) {
+                String json = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+                int at = json.indexOf("\"version\"");
+                if (at < 0) {
+                    return "0.0.0";
+                }
+                int colon = json.indexOf(':', at);
+                int first = json.indexOf('"', colon);
+                int second = json.indexOf('"', first + 1);
+                return first > 0 && second > first ? json.substring(first + 1, second) : "0.0.0";
+            }
+        }
+    }
+
+    private static InputStream shimBytes(String className) throws IOException {
+        InputStream input = RoxyForgeDependencyLocator.class.getClassLoader().getResourceAsStream(className);
+        if (input == null) {
+            throw new IOException("missing shim class resource " + className);
+        }
+        return input;
     }
 
     private static boolean isSynthetic(String name) {
         String upper = name.toUpperCase(Locale.ROOT);
         return upper.equals("META-INF/MANIFEST.MF")
+                || upper.equals("META-INF/MODS.TOML")
                 || upper.equals("META-INF/VOXY-FABRIC.JSON")
-                || upper.startsWith("META-INF/ROXY/");
-    }
-
-    private static String voxyMarker(Path source) {
-        return "{\"schemaVersion\":1,\"id\":\"" + VOXY_MOD_ID + "\",\"source\":\"" + source.getFileName() + "\"}";
+                || upper.startsWith("META-INF/ROXY/")
+                || upper.startsWith("NET/VOXY/");
     }
 }
