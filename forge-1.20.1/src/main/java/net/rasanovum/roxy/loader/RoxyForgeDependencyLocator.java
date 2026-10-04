@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.Manifest;
@@ -51,9 +52,10 @@ public final class RoxyForgeDependencyLocator implements IDependencyLocator {
                 if (source == null) {
                     continue;
                 }
-                done = true;
-                try {
-                    IModFile registered = registerVoxy(source);
+done = true;
+            try {
+                installShutdownHook();
+                IModFile registered = registerVoxy(source);
                     found.add(registered);
                     trace("registered Voxy " + source.getFileName() + " as a library mod file");
                 } catch (Throwable problem) {
@@ -74,6 +76,30 @@ public final class RoxyForgeDependencyLocator implements IDependencyLocator {
      * Mod discovery runs before log4j exists, so stdout is never flushed to latest.log. Write our own
      * line next to the game directory instead - it is the only way to see why Voxy did or did not load.
      */
+    private static boolean hookInstalled;
+
+    /**
+     * The game can die without a crash report - a clean System.exit during Mixin transformation leaves no
+     * trace in any log. Dumping every thread on shutdown is the only way to see where it stopped.
+     */
+    static void installShutdownHook() {
+        if (hookInstalled) {
+            return;
+        }
+        hookInstalled = true;
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            Map<Thread, StackTraceElement[]> traces = Thread.getAllStackTraces();
+            StringBuilder dump = new StringBuilder("shutdown: the JVM is going down\n");
+            for (Map.Entry<Thread, StackTraceElement[]> entry : traces.entrySet()) {
+                dump.append("  thread ").append(entry.getKey().getName()).append('\n');
+                for (StackTraceElement element : entry.getValue()) {
+                    dump.append("      ").append(element).append('\n');
+                }
+            }
+            trace(dump.toString());
+        }, "roxyforge-shutdown-dump"));
+    }
+
     static void trace(String message) {
         String line = "[roxyforge] " + message;
         System.out.println(line);

@@ -170,11 +170,12 @@ leaving the upstream NeoForge build untouched. Build with:
         A failed remap also left the copy without a readable `mods.toml`, which surfaced as
         `NullPointerException: ... this.modFileInfo is null`.
 
-      Still open: after registration the JVM dies right where ModLauncher initialises the FML
-      transformers - no log line, no crash report. That points at Mixin transformation or module layer
-      construction over the Voxy copy, so the next step is to log inside the transform phase (a Mixin
-      `IMixinConfigPlugin` on our own mixin config is the easy place) and find which class or mixin
-      reference dies there.
+      Still open: after registration the JVM leaves cleanly - a shutdown hook proves it - right where
+      ModLauncher initialises the FML transformers. No crash report, no `hs_err`, nothing in any log, and
+      by the time the hook runs only the launcher's threads are left, so the failure is inside the game
+      process before it can log. That points at Mixin transformation or module layer construction over the
+      Voxy copy. Next step: log from inside the transform phase (a `IMixinConfigPlugin` on our own mixin
+      config is the easy place) and/or pass `--mixin.debug.export` so Mixin writes which class it died on.
 - [ ] **M6** run in 1.20.1 Forge, verify LODs, screenshots.
       Fixes this round: bridge keys are written the way the **bytecode** spells the member (name and
       descriptor glued), because that is what the redirect's lookup key is built from; fields also accept
