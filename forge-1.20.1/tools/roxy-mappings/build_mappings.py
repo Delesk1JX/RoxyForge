@@ -337,7 +337,40 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
     # intermediary -> obfuscated(1.20.1) -> official(1.20.1). Forge 1.20.1 runs with official class names.
     obf_old_to_official = {obf: official for official, obf in mojang.classes.items()}
 
+    # Curated renames for 1.21-only classes that exist in 1.20.1 under another name. Every alias target
+    # is validated against the Minecraft jar below, so a wrong line is dropped instead of silently
+    # producing NoClassDefFoundError at runtime.
+    aliases: dict[str, str] = {}
+    alias_file = Path(__file__).resolve().parent / "aliases.txt"
+    if alias_file.exists():
+        for line in alias_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split()
+            if len(parts) == 2:
+                aliases[parts[0]] = parts[1]
+
+    # 1.21.11 obfuscated -> mojmap, needed only so aliases can be written in readable class names.
+    new_by_obf: dict[str, str] = {}
+    new_mojmap = DOWNLOADS / "client-1.21.11.txt"
+    if new_mojmap.exists() and aliases:
+        new_by_obf = {obf: official for official, obf in MojangMappings.read(new_mojmap).classes.items()}
+        print(f"aliases loaded: {len(aliases)} (1.21.11 mojmap: {'yes' if new_by_obf else 'no'})")
+    elif aliases:
+        print(f"aliases loaded: {len(aliases)} but client-1.21.11.txt is missing, they will not apply")
+        aliases = {}
+
     def target_class(intermediary_name: str) -> str | None:
+        # Preferred path: name the class in 1.21.11 mojmap terms, then apply a curated alias. This is the
+        # only way to reach classes that 1.20.1 does not have at all.
+        if new_by_obf:
+            obfuscated_new = intermediary_new.classes.get(intermediary_name)
+            official_new = new_by_obf.get(obfuscated_new) if obfuscated_new else None
+            if official_new:
+                internal_new = official_new.replace(".", "/")
+                if internal_new in aliases:
+                    return aliases[internal_new]
         obf = intermediary_old.classes.get(intermediary_name)
         if obf is None:
             return None

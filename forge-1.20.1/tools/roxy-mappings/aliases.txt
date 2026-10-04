@@ -1,0 +1,8 @@
+# Aliases: classes Voxy references from Minecraft 1.21.11 that have a direct 1.20.1 counterpart under a
+# different name. Lines: <1.21.11 official class> <1.20.1 official class>
+#
+# Only rename-level counterparts belong here: if the two classes do not share their member shapes, the
+# reference needs a shim or a patch instead, and a wrong alias would produce a NoSuchMethodError.
+net/minecraft/client/renderer/block/model/BlockModelPart net/minecraft/client/model/geom/ModelPart
+net/minecraft/client/renderer/fog/FogData net/minecraft/client/renderer/FogRenderer$FogData
+net/minecraft/client/renderer/chunk/ChunkSectionLayer net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk
