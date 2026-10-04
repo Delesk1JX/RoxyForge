@@ -1,4 +1,4 @@
-plugins {
+﻿plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
@@ -101,6 +101,19 @@ tasks.register('remapVoxy', JavaExec) {
             project.voxy_jar,
             layout.buildDirectory.file('remapped/voxy.jar').get().asFile.path,
             layout.buildDirectory.file('remapped/remap-report.txt').get().asFile.path
+}
+
+// M3c: static link check of the remapped jar against the jars the game really loads.
+tasks.register('linkCheckVoxy', JavaExec) {
+    group = 'roxyforge'
+    description = 'Report every Minecraft class/method/field the remapped Voxy jar cannot link'
+    dependsOn 'remapVoxy'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'net.rasanovum.roxy.tools.VoxyLinkCheckTool'
+    args layout.buildDirectory.file('remapped/voxy.jar').get().asFile.path,
+            project.mc_srg_jar,
+            project.embeddium_jar,
+            layout.buildDirectory.file('remapped/link-report.txt').get().asFile.path
 }
 
 jar {

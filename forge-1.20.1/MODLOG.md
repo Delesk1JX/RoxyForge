@@ -85,8 +85,22 @@ leaving the upstream NeoForge build untouched. Build with:
       Naming those classes needs Mojang's 1.21.11 `client.txt`: Fabric's `intermediary-1.21.11.jar`
       labels its left column "official" but it actually holds 1.21.11 *obfuscated* names (`hth`, `glw`...),
       so it cannot answer "what is class_11515 in mojmap terms".
-- [ ] **M3c** load the remapped jar and count what still fails to resolve (NoClassDefFoundError /
-      NoSuchMethodError) against a SRG-named Minecraft classpath.
+- [x] **M3c** static link check, `gradlew linkCheckVoxy` -> `build/remapped/link-report.txt`.
+      Walks the remapped jar's bytecode and asks the **real** SRG-named
+      `client-1.20.1-20230612.114412-srg.jar` (plus Embeddium) whether every referenced class, method and
+      field exists, walking the super/interface chain. No game launch needed, so it can be run on every
+      change. On voxy-0.2.16-beta: 350 classes walked, 1024 Minecraft class references, 3281 method and
+      1313 field references, and **205 unresolved symbols in total** - 13 classes, 137 methods, 55 fields.
+      Those two hundred are the M4 work list, and they fall into two different groups:
+      - **API that 1.20.1 simply does not have** (needs a shim class or a patch): `class_10868`,
+        `class_10889`, `class_11515`, `class_11630/11631/11632/11635`, `class_11897`, `class_12253`,
+        `class_7285`, `class_9259`, `class_9779`, `class_9848`, plus members such as
+        `WorldVersion.comp_4026()` (records do not exist in 1.20.1).
+      - **Mapping misses**, which are fixable in the generator rather than in bytecode: some members were
+        left as `method_1548()` because their descriptor changed between versions, and a few picked the
+        wrong overload and now carry an SRG name that 1.20.1 does not have (e.g. `Minecraft.m_271549_()`).
+        The link checker is exactly the feedback loop the generator needs: generate -> check -> fix.
+- [ ] **M4** structural patches + bridges for 1.20.1, Embeddium instead of Sodium.
 - [ ] **M3b** Java remapper that applies the mapping to Voxy's classes.
 - [ ] **M4** structural patches + bridges for 1.20.1, Embeddium instead of Sodium.
 - [ ] **M5** mixins for 1.20.1, drop 1.21-only compat (Iris, Chunky, Sable, TFC, PowerGrid).
