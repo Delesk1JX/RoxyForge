@@ -172,14 +172,33 @@ public final class RoxyForgeDependencyLocator implements IDependencyLocator {
                 out.closeEntry();
             }
             addModsToml(out, source);
-            for (String shim : SHIM_CLASSES) {
+            for (String shim : shimClasses()) {
                 out.putNextEntry(new JarEntry(shim));
                 try (InputStream input = shimBytes(shim)) {
                     input.transferTo(out);
                 }
                 out.closeEntry();
+                trace("injected shim " + shim);
             }
         }
+    }
+
+    /** net.voxy.Voxy plus every shim the build found, listed in roxyforge/shims.txt inside our own jar. */
+    private static List<String> shimClasses() throws IOException {
+        List<String> classes = new ArrayList<>(SHIM_CLASSES);
+        try (InputStream index = RoxyForgeDependencyLocator.class.getClassLoader()
+                .getResourceAsStream("roxyforge/shims.txt")) {
+            if (index == null) {
+                return classes;
+            }
+            for (String line : new String(index.readAllBytes(), StandardCharsets.UTF_8).split("\\R")) {
+                String name = line.trim();
+                if (name.endsWith(".class")) {
+                    classes.add(name);
+                }
+            }
+        }
+        return classes;
     }
 
     private static Manifest manifestFor(Path source) {
@@ -231,14 +250,13 @@ public final class RoxyForgeDependencyLocator implements IDependencyLocator {
         }
     }
 
-    private static InputStream shimBytes(String className) throws IOException {
+private static InputStream shimBytes(String className) throws IOException {
         InputStream input = RoxyForgeDependencyLocator.class.getClassLoader().getResourceAsStream(className);
         if (input == null) {
             throw new IOException("missing shim class resource " + className);
         }
         return input;
     }
-
     private static boolean isSynthetic(String name) {
         String upper = name.toUpperCase(Locale.ROOT);
         return upper.equals("META-INF/MANIFEST.MF")

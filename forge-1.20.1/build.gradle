@@ -107,13 +107,44 @@ tasks.register('remapVoxy', JavaExec) {
 tasks.register('linkCheckVoxy', JavaExec) {
     group = 'roxyforge'
     description = 'Report every Minecraft class/method/field the remapped Voxy jar cannot link'
-    dependsOn 'remapVoxy'
+    dependsOn 'remapVoxy', 'jar'
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'net.rasanovum.roxy.tools.VoxyLinkCheckTool'
     args layout.buildDirectory.file('remapped/voxy.jar').get().asFile.path,
             project.mc_srg_jar,
             project.embeddium_jar,
+            // Our own jar carries the shims, so the checker sees what the game will see.
+            tasks.named('jar').get().archiveFile.get().asFile.path,
             layout.buildDirectory.file('remapped/link-report.txt').get().asFile.path
+}
+
+// The shims are compiled into our jar and injected into the runtime copy of the Voxy jar by the
+// locator, so the index of them has to travel with the build.
+def shimIndex = layout.buildDirectory.file('roxyforge/shims.txt')
+
+tasks.register('writeShimIndex') {
+    dependsOn 'classes'
+    def classesDirs = sourceSets.main.output.classesDirs
+    def target = shimIndex
+    inputs.files(classesDirs)
+    outputs.file(target)
+    doLast {
+        def shims = classesDirs.files.collect { fileTree(dir: it, include: 'net/minecraft/class_*.class') }
+                .collectMany { it.files }
+                .collect { it.absolutePath }
+                .sort()
+        def file = target.get().asFile
+        file.parentFile.mkdirs()
+        file.text = shims.join('\n') + '\n'
+        logger.lifecycle("shim index: ${shims.size()} class(es) -> ${file}")
+    }
+}
+
+tasks.named('jar') {
+    dependsOn 'writeShimIndex'
+    from(shimIndex) {
+        into 'roxyforge'
+    }
 }
 
 jar {

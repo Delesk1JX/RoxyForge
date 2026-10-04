@@ -114,11 +114,32 @@ leaving the upstream NeoForge build untouched. Build with:
       between versions (arity plus primitive/array positions).
 - [x] **M3c final numbers** with the verified mapping: 350 classes walked, 1024 Minecraft class, 3285
       method and 1313 field references, **227 unresolved symbols: 13 classes, 151 methods, 63 fields**.
-- [ ] **M4** structural patches + bridges for 1.20.1, Embeddium instead of Sodium. With 227 symbols over
-      13 classes that 1.20.1 does not have at all, this is the bulk of the port - now measured rather
-      than guessed.
-- [ ] **M5** mixins for 1.20.1, drop 1.21-only compat (Iris, Chunky, Sable, TFC, PowerGrid).
-- [ ] **M6** install Embeddium, verify LODs in game, screenshots.
+- [x] **M4a** the 1.21-only classes are handled, and unresolved classes are now zero.
+      Two mechanisms, both driven by the link checker so they stay honest:
+      - **aliases** (`tools/roxy-mappings/aliases.txt`) for classes that exist in 1.20.1 under another
+        name: BlockModelPart -> client/model/geom/ModelPart, FogData -> FogRenderer$FogData,
+        ChunkSectionLayer -> ChunkRenderDispatcher$RenderChunk. Targets are validated like any other
+        entry, so a wrong line is dropped rather than becoming a NoClassDefFoundError.
+        Voxy class coverage 93.96% -> 95.30%.
+      - **shims** for the rest: `make_shims.py` generates a Java source per missing class declaring
+        exactly the surface Voxy touches, compiled into our jar, listed in `roxyforge/shims.txt` and
+        injected into the runtime copy of the Voxy jar by the locator. 10 shims today (GlTexture,
+        DebugScreenDisplayer/Entries/Entry/EntryStatus, PalettedContainerFactory, MipmapStrategy,
+        ChunkResult, DeltaTracker, ARGB and two more). Bodies throw `UnsupportedOperationException` on
+        purpose: this milestone is "Voxy links", and the game run is what shows which calls need real
+        implementations.
+      Result: **UNRESOLVED classes 0**, and the link checker now sees our jar, so it measures what the
+      game will see.
+- [ ] **M4b** 141 methods and 61 fields are still unresolved, and unlike the classes they are all on
+      real Minecraft classes - for example `Minecraft.method_1548()Lnet/minecraft/client/User;`,
+      `Camera.method_71156()Lnet/minecraft/world/phys/Vec3;`, `WorldVersion.comp_4026()`. Each is a
+      member that exists in 1.20.1 under a name the matcher cannot derive. The next increment should be
+      a **member alias table** (intermediary method -> 1.20.1 SRG name), with the generator proposing
+      candidates by return type and descriptor shape and a human curating them - the same shape as
+      aliases.txt, which is what took class coverage from 93.96% to 95.30%.
+- [ ] **M4c** bridges for Embeddium instead of Sodium.
+- [ ] **M5** feed the remapped jar into the in-game path (SPI) and get the launch stable.
+- [ ] **M6** run in 1.20.1 Forge, verify LODs, screenshots.
 
 ## M3a verdict: what the unmapped 58 % is
 
