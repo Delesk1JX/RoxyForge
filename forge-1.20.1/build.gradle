@@ -103,7 +103,18 @@ tasks.register('remapVoxy', JavaExec) {
             layout.buildDirectory.file('remapped/remap-report.txt').get().asFile.path
 }
 
-// M3c: static link check of the remapped jar against the jars the game really loads.
+// The Minecraft 1.20.1 class index (client SRG jar plus the deobfuscated server jar), written by
+// build_mappings.py --emit-index. Regenerate with `gradlew mcIndex`.
+tasks.register('mcIndex', Exec) {
+    group = 'roxyforge'
+    description = 'Rebuild the Minecraft 1.20.1 class index used by linkCheckVoxy'
+    commandLine 'python', 'tools/roxy-mappings/build_mappings.py',
+            '--mc-jar', project.mc_srg_jar,
+            '--server-jar', project.mc_server_jar,
+            '--emit-index', layout.buildDirectory.file('mc-index-1.20.1.txt').get().asFile.path
+}
+
+// M4c: static link check of the remapped jar against the jars the game really loads.
 tasks.register('linkCheckVoxy', JavaExec) {
     group = 'roxyforge'
     description = 'Report every Minecraft class/method/field the remapped Voxy jar cannot link'
@@ -112,6 +123,7 @@ tasks.register('linkCheckVoxy', JavaExec) {
     mainClass = 'net.rasanovum.roxy.tools.VoxyLinkCheckTool'
     args layout.buildDirectory.file('remapped/voxy.jar').get().asFile.path,
             project.mc_srg_jar,
+            layout.buildDirectory.file('mc-index-1.20.1.txt').get().asFile.path,
             project.embeddium_jar,
             // Our own jar carries the shims, so the checker sees what the game will see.
             tasks.named('jar').get().archiveFile.get().asFile.path,

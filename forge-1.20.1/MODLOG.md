@@ -130,18 +130,22 @@ leaving the upstream NeoForge build untouched. Build with:
         implementations.
       Result: **UNRESOLVED classes 0**, and the link checker now sees our jar, so it measures what the
       game will see.
-- [~] **M4b** still open, but the blocker is diagnosed. What this round fixed:
-      the deobfuscation of **members** has to be scoped by owner class, because obfuscated member names
-      are only unique inside their class - the same short name (`ac`) is a class in one place and a field
-      in another and deobfuscates to completely different things. With that scope in place the mojmap
-      matching stage became valid: the mapping grew from 21 705 to **38 304 verified entries with 0
-      wrong** (16 599 of them matched by mojmap identity), and Voxy's member coverage went 11.98% ->
-      **27.86%**. Unresolved: 133 methods and 55 fields, all on real Minecraft classes.
-      Also learned: the Mojang **client** SRG jar is not the whole API surface. Classes such as
-      `WorldVersion`, `ChunkResult` and `PalettedContainerFactory` are server-side, and the Mojang server
-      jar ships **obfuscated**, so it has to be deobfuscated with the 1.20.1 mojmap before indexing
-      (build_mappings.py takes --server-jar for this). The link checker still only indexes the client
-      jar, so its unresolved list can contain server-side false positives; that is the next fix.
+- [~] **M4b** still open. Three pipeline bugs found and fixed this round:
+      1. member deobfuscation has to be **scoped by owner class** (obfuscated member names are only
+         unique inside their class - `ac` is a class in one place and a field in another). With that,
+         the mojmap matching stage became valid: 16 599 extra verified entries, Voxy member coverage
+         11.98% -> 27.86%.
+      2. the Minecraft **client** SRG jar is not the whole API surface - `WorldVersion`, `ChunkResult`,
+         `PalettedContainerFactory` are server-side, and the Mojang server jar ships **obfuscated**, so it
+         has to be deobfuscated with the 1.20.1 mojmap. `build_mappings.py --emit-index` writes the
+         combined index (12 896 classes) and the link checker reads it.
+      3. the tiny parser converted member descriptors in a **single pass**, so any descriptor mentioning a
+         class listed later in the file kept its obfuscated name - which silently broke every member
+         lookup keyed by descriptor. Two passes fixed it: coverage 27.86% -> **34.64%**.
+      Where it stands: **0 unresolved classes, 120 methods, 50 fields**. The remainder is concentrated in
+      a few owners - Minecraft (11), ClientLevel (9), Direction (6), RenderChunk, GameRenderer,
+      FogRenderer$FogData, LerpingBossEvent, BakedQuad - which is the shape of the work that is left:
+      per-member bridges.
 - [ ] **M4c** bridges for Embeddium instead of Sodium.
 - [ ] **M5** feed the remapped jar into the in-game path (SPI) and get the launch stable.
 - [ ] **M6** run in 1.20.1 Forge, verify LODs, screenshots.

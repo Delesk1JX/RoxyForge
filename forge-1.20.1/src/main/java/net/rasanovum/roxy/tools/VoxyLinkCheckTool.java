@@ -60,7 +60,8 @@ public final class VoxyLinkCheckTool {
         List<Path> jars = new ArrayList<>();
         for (int at = 1; at < args.length; at++) {
             Path candidate = Path.of(args[at]);
-            if (Files.isRegularFile(candidate) && candidate.toString().endsWith(".jar")) {
+            if (Files.isRegularFile(candidate)
+                    && (candidate.toString().endsWith(".jar") || candidate.toString().endsWith(".txt"))) {
                 jars.add(candidate);
             }
         }
@@ -68,7 +69,11 @@ public final class VoxyLinkCheckTool {
 
         Index index = new Index();
         for (Path jar : jars) {
-            indexJar(jar, index);
+            if (jar.toString().endsWith(".txt")) {
+                indexTextFile(jar, index);
+            } else {
+                indexJar(jar, index);
+            }
         }
 
         References references = new References();
@@ -209,6 +214,31 @@ public final class VoxyLinkCheckTool {
         }
     }
 
+    /**
+     * Reads the index the mapping generator writes: what Minecraft 1.20.1 declares, with the obfuscated
+     * server jar already deobfuscated. One line per record: C class, S class super, I class interface,
+     * M class name+descriptor, F class name+descriptor.
+     */
+    private static void indexTextFile(Path file, Index index) throws IOException {
+        for (String line : Files.readAllLines(file)) {
+            if (line.isEmpty()) {
+                continue;
+            }
+            String[] parts = line.split("\t");
+            switch (parts[0]) {
+                case "C" -> {
+                    index.methods.computeIfAbsent(parts[1], ignored -> new LinkedHashSet<>());
+                    index.fields.computeIfAbsent(parts[1], ignored -> new LinkedHashSet<>());
+                }
+                case "S" -> index.supers.put(parts[1], parts[2]);
+                case "I" -> index.interfaces.computeIfAbsent(parts[1], ignored -> new ArrayList<>()).add(parts[2]);
+                case "M" -> index.methods.get(parts[1]).add(parts[2]);
+                case "F" -> index.fields.get(parts[1]).add(parts[2]);
+                default -> { }
+            }
+        }
+    }
+
     private static final class IndexVisitor extends ClassVisitor {
         private final Index index;
         private String owner;
@@ -228,7 +258,7 @@ public final class VoxyLinkCheckTool {
                 index.supers.put(internalName, superName);
             }
             if (interfaces != null && interfaces.length > 0) {
-                index.interfaces.put(internalName, List.of(interfaces));
+                index.interfaces.put(internalName, new ArrayList<>(List.of(interfaces)));
             }
         }
 

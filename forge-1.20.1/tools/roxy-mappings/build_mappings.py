@@ -51,14 +51,24 @@ class Tiny:
     @classmethod
     def parse(cls, text: str) -> "Tiny":
         result = cls()
-        intermediary_owner = None
+        rows: list[tuple[str, list[str]]] = []
         for line in text.splitlines():
             parts = line.split("\t")
             head = parts[0]
             if head.startswith("v1") or head.startswith("v2"):
                 continue
+            rows.append((head, parts))
+
+        # Two passes on purpose: member descriptors have to be converted into the intermediary namespace,
+        # and that needs the class table complete. Doing it in one pass leaves obfuscated names in every
+        # descriptor whose class happens to be listed later in the file.
+        for head, parts in rows:
             if head == "CLASS" and len(parts) >= 3:
                 result.classes[parts[2]] = parts[1]
+
+        intermediary_owner = None
+        for head, parts in rows:
+            if head == "CLASS" and len(parts) >= 3:
                 intermediary_owner = parts[2]
                 continue
             if len(parts) >= 5 and parts[0] in ("FIELD", "METHOD"):
@@ -671,8 +681,32 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
         stats["top_unmapped"] = top
 
     report_path.write_text(json.dumps(stats, indent=2), encoding="utf-8")
+
     print(json.dumps({k: v for k, v in stats.items() if k != "top_unmapped"}, indent=2))
     print(f"mapping file: {target}")
+
+
+def write_index(index, path: Path) -> None:
+    """Dump everything the Minecraft jars declare, in a form the Java link checker can read.
+
+    The Mojang server jar is obfuscated while the client jar is SRG named, so the two are indexed
+    separately and only meet here, after deobfuscation. Format (one record per line):
+        C <class> | S <class> <super> | I <class> <interface> | M <class> <name><desc> | F ...
+    """
+    lines = []
+    for name, facts in index.classes.items():
+        lines.append(f"C\t{name}")
+        if facts.super_name:
+            lines.append(f"S\t{name}\t{facts.super_name}")
+        for interface in facts.interfaces:
+            lines.append(f"I\t{name}\t{interface}")
+        for member in facts.methods:
+            lines.append(f"M\t{name}\t{member}")
+        for member in facts.fields:
+            lines.append(f"F\t{name}\t{member}")
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    Path(path).write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"wrote {path} ({len(lines)} records, {len(index.classes)} classes)")
 
 
 def main() -> None:
@@ -682,8 +716,18 @@ def main() -> None:
     parser.add_argument("--report", type=Path, default=HERE / "coverage-report.json")
     parser.add_argument("--mc-jar", type=Path, help="Minecraft 1.20.1 SRG client jar to validate the mapping against")
     parser.add_argument("--server-jar", type=Path, help="obfuscated Minecraft 1.20.1 server jar, for the classes the client jar does not carry")
+    parser.add_argument("--emit-index", type=Path, help="write the combined client+server class index for the link checker")
     args = parser.parse_args()
     build(args.voxy, args.out, args.report, args.mc_jar, args.server_jar)
+
+    if args.emit_index:
+        from mcindex import JarIndex
+        combined = JarIndex.read(Path(args.mc_jar))
+        if args.server_jar and Path(args.server_jar).exists():
+            mojang = MojangMappings.read(DOWNLOADS / "client-1.20.1.txt")
+            for facts in JarIndex.read(Path(args.server_jar), mojang.classes).classes.values():
+                combined.classes.setdefault(facts.name, facts)
+        write_index(combined, args.emit_index)
 
 
 if __name__ == "__main__":
