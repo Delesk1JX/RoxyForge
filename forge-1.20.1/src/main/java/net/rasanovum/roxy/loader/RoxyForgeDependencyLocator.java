@@ -138,16 +138,54 @@ public final class RoxyForgeDependencyLocator implements IDependencyLocator {
         return name.endsWith(".jar") && name.startsWith(VOXY_JAR_PREFIX);
     }
 
-    private IModFile registerVoxy(Path source) throws IOException {
+private IModFile registerVoxy(Path source) throws IOException {
         Path working = Files.createTempDirectory("roxyforge");
         Path target = working.resolve(source.getFileName().toString().toLowerCase(Locale.ROOT));
         copyAsLibrary(source, target);
+        remapInPlace(target);
         SecureJar secureJar = SecureJar.from((name, size) -> true, target);
         trace("secure jar built for " + target.getFileName());
         IModFile file = ModFileFactory.FACTORY.build(secureJar, this, ModFileParser::modsTomlParser);
         trace("mod file ready: " + file.getFilePath() + " type=" + file.getType()
                 + " mods=" + file.getModInfos());
         return file;
+    }
+
+    /**
+     * Rewrite Voxy's intermediary bytecode into Forge 1.20.1 names on the copy we just made. The user
+     * keeps dropping in an untouched Voxy jar; the mapping and the bridge list travel inside our own jar,
+     * so this is the same approach upstream Roxy takes. Without it the classes keep intermediary names
+     * and fail to link in game.
+     */
+    private static void remapInPlace(Path target) {
+        try (InputStream mapping = RoxyForgeDependencyLocator.class.getClassLoader()
+                .getResourceAsStream("roxyforge/mapping.txt")) {
+            if (mapping == null) {
+                trace("no roxyforge/mapping.txt in our jar, the copy is left unremapped");
+                return;
+            }
+            Path mappingFile = Files.createTempFile("roxyforge-mapping", ".txt");
+            Files.copy(mapping, mappingFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            RoxyForgeMappings mappings = RoxyForgeMappings.load(mappingFile);
+            Path remapped = Files.createTempFile("roxyforge-remapped", ".jar");
+            Path bridgeFile = Files.createTempFile("roxyforge-bridges", ".txt");
+            try (InputStream bridges = RoxyForgeDependencyLocator.class.getClassLoader()
+                    .getResourceAsStream("roxyforge/bridges.txt")) {
+                if (bridges != null) {
+                    Files.copy(bridges, bridgeFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+            RoxyForgeRemapper.Report report = new RoxyForgeRemapper(mappings, bridgeFile)
+                    .remapJar(target, remapped);
+            // Never write over the jar we are reading: the remapper streams it entry by entry.
+            Files.move(remapped, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            trace("remapped " + report.classesIn() + " classes, " + report.memberRenames() + " member renames, "
+                    + RoxyBridgeRedirect.totalRedirects() + " call sites redirected into bridges");
+            Files.deleteIfExists(mappingFile);
+            Files.deleteIfExists(bridgeFile);
+        } catch (IOException | RuntimeException problem) {
+            trace("remap failed: " + problem);
+        }
     }
 
 

@@ -114,6 +114,25 @@ tasks.register('mcIndex', Exec) {
             '--emit-index', layout.buildDirectory.file('mc-index-1.20.1.txt').get().asFile.path
 }
 
+// The mapping and the bridge list travel with our jar: the locator remaps Voxy at load time, the same way
+// upstream Roxy does, so the user keeps dropping in an untouched Voxy jar.
+def mappingResource = layout.buildDirectory.file('roxyforge/mapping.txt')
+def bridgeResource = layout.buildDirectory.file('roxyforge/bridges.txt')
+
+tasks.register('bundleRoxyForgeData', Copy) {
+    from(project.mapping_file) { rename { 'mapping.txt' } }
+    from(project.file('tools/roxy-mappings/roxy-mappings/bridges.txt')) { rename { 'bridges.txt' } }
+    into layout.buildDirectory.dir('generated-resources')
+}
+
+
+tasks.named('processResources') {
+    dependsOn 'bundleRoxyForgeData'
+    from(layout.buildDirectory.dir('generated-resources')) {
+        into 'roxyforge'
+    }
+}
+
 // M4c: static link check of the remapped jar against the jars the game really loads.
 tasks.register('linkCheckVoxy', JavaExec) {
     group = 'roxyforge'
@@ -141,10 +160,15 @@ tasks.register('writeShimIndex') {
     inputs.files(classesDirs)
     outputs.file(target)
     doLast {
-        def shims = classesDirs.files.collect { fileTree(dir: it, include: 'net/minecraft/class_*.class') }
-                .collectMany { it.files }
-                .collect { it.absolutePath }
-                .sort()
+        // Paths are relative to the classes root: the file travels inside our jar and is read back as a
+        // classpath resource at runtime, where absolute build paths mean nothing.
+        def shims = []
+        classesDirs.each { File root ->
+            fileTree(dir: root, include: 'net/minecraft/class_*.class').each { File file ->
+                shims << root.toPath().relativize(file.toPath()).toString().replace('\\', '/')
+            }
+        }
+        shims.sort()
         def file = target.get().asFile
         file.parentFile.mkdirs()
         file.text = shims.join('\n') + '\n'

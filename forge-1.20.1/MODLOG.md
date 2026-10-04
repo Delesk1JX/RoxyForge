@@ -150,10 +150,31 @@ leaving the upstream NeoForge build untouched. Build with:
       instruction. Most likely it sits in a `Handle` in an `invokedynamic` bootstrap (Voxy uses lambdas
       heavily), which the redirect does not visit yet. The fix is to rewrite method handles in
       `visitInvokeDynamicInsn` as well.
-- [ ] **M5** the locator still copies the *original* Voxy jar from `mods/`; it has to copy the remapped
-      one (from `gradlew remapVoxy`), or the in-game class load will use intermediary names. The remapper
-      and the mapping have to reach the game somehow: either as resources of our jar (upstream Roxy
-      remaps at load time) or by shipping the remapped jar next to the user's copy.
+- [~] **M5** the in-game path now runs end to end. Verified in the ElyPrism 1.20.1 instance, from our own
+      log at `<gamedir>/roxyforge-locator.log`:
+
+          injected shim net/minecraft/class_10868.class   (and 9 more)
+          remapped 361 classes, 194 member renames, 306 call sites redirected into bridges
+          mod file ready: ...voxy-0.2.16-beta+1.21.11.jar type=MOD mods=[ModInfo@42c28305]
+          registered Voxy voxy-0.2.16-beta+1.21.11.jar as a library mod file
+
+      So the user still drops an untouched Voxy jar into `mods/` and RoxyForge remaps it at load time,
+      which is the approach upstream Roxy takes. The mapping, the bridge list and the shim index travel
+      inside our own jar under `roxyforge/`.
+
+      Running it in game immediately paid for itself - two bugs that no offline test could have caught:
+      - the shim index listed **absolute build paths**, which are meaningless inside a jar; it now lists
+        paths relative to the classes root;
+      - the remapper wrote its output **over the jar it was reading**, which failed with
+        `EOFException: Unexpected end of ZLIB input stream`; it now writes to a temp file and moves it.
+        A failed remap also left the copy without a readable `mods.toml`, which surfaced as
+        `NullPointerException: ... this.modFileInfo is null`.
+
+      Still open: after registration the JVM dies right where ModLauncher initialises the FML
+      transformers - no log line, no crash report. That points at Mixin transformation or module layer
+      construction over the Voxy copy, so the next step is to log inside the transform phase (a Mixin
+      `IMixinConfigPlugin` on our own mixin config is the easy place) and find which class or mixin
+      reference dies there.
 - [ ] **M6** run in 1.20.1 Forge, verify LODs, screenshots.
       Fixes this round: bridge keys are written the way the **bytecode** spells the member (name and
       descriptor glued), because that is what the redirect's lookup key is built from; fields also accept
