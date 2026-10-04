@@ -40,17 +40,13 @@ def member_name(raw: str) -> str:
     return f"`{name}`" if name in JAVA_KEYWORDS else name
 
 
-NAME_AND_DESCRIPTOR = re.compile(
-    r"^([A-Za-z_$][\w$]*?)((?:\[[BCDFIJSZV]|L[\w$/]+;).*$)")
+NAME_AND_DESCRIPTOR = None  # the link checker now separates name and descriptor with ':'
 
 
 def split_field(entry: str) -> tuple[str, str]:
-    """The link checker prints fields as name+descriptor with no separator, so the split has to come
-    from the descriptor grammar: the shortest name that leaves a valid descriptor behind."""
-    match = NAME_AND_DESCRIPTOR.match(entry)
-    if not match:
-        return entry, "Ljava/lang/Object;"
-    return match.group(1), match.group(2)
+    """Fields arrive as name:descriptor from the link checker."""
+    name, _, descriptor = entry.partition(":")
+    return name, descriptor or "Ljava/lang/Object;"
 
 
 def split_parameters(descriptor: str) -> list[str]:

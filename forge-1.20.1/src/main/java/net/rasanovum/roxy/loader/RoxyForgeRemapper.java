@@ -32,9 +32,15 @@ public final class RoxyForgeRemapper {
     }
 
     private final RoxyForgeMappings mappings;
+    private final Path bridgeList;
 
     public RoxyForgeRemapper(RoxyForgeMappings mappings) {
+        this(mappings, Path.of("tools", "roxy-mappings", "roxy-mappings", "bridges.txt"));
+    }
+
+    public RoxyForgeRemapper(RoxyForgeMappings mappings, Path bridgeList) {
         this.mappings = mappings;
+        this.bridgeList = bridgeList;
     }
 
     public Report remapJar(Path source, Path target) throws IOException {
@@ -138,7 +144,7 @@ public final class RoxyForgeRemapper {
                 return name;
             }
         };
-        reader.accept(new ClassRemapper(writer, remapper), 0);
+        reader.accept(new RoxyBridgeRedirect(new ClassRemapper(writer, remapper), bridgeList), 0);
         return writer.toByteArray();
     }
 

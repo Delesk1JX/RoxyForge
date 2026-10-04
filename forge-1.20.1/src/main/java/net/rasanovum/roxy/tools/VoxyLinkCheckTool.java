@@ -115,7 +115,9 @@ public final class VoxyLinkCheckTool {
                 continue;
             }
             if (!declaresField(index, parts[0], parts[1], entry.getValue())) {
-                missingFields.merge(parts[0] + '.' + parts[1] + entry.getValue(), 1, Integer::sum);
+                // ':' separates name from descriptor: a field called field_60582F ends in a letter that
+                // looks like the start of a primitive descriptor, so concatenation is ambiguous.
+                missingFields.merge(parts[0] + '.' + parts[1] + ':' + entry.getValue(), 1, Integer::sum);
             }
         }
 
