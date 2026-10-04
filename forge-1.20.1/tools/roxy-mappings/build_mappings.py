@@ -301,6 +301,26 @@ def _to_target_descriptor(descriptor: str, official_by_intermediary: dict[str, s
     return "".join(out)
 
 
+def _to_mojmap_descriptor(descriptor: str, obf_to_official: dict[str, str]) -> str:
+    """Rewrite an obfuscated 1.20.1 descriptor's class names into mojmap names."""
+    out = []
+    index = 0
+    while index < len(descriptor):
+        char = descriptor[index]
+        if char != "L":
+            out.append(char)
+            index += 1
+            continue
+        end = descriptor.find(";", index)
+        if end < 0:
+            break
+        internal = descriptor[index + 1:end]
+        out.append("L" + obf_to_official.get(internal, internal))
+        out.append(";")
+        index = end + 1
+    return "".join(out)
+
+
 def _primitives(descriptor: str) -> str:
     """Primitives and array depth only, which survive version changes more often than class names."""
     out = []
@@ -391,8 +411,10 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
         if official:
             class_lines.append(f"C\t{intermediary}\t{official}")
 
-    # intermediary member names are stable across versions, descriptors are not, so match on the name
-    # and use the descriptor only to pick between overloads.
+    # intermediary member names are stable across versions, descriptors are not, so match on the name and
+    # use the descriptor only to pick between overloads. When the intermediary name itself changed
+    # between versions, fall back to matching on the mojmap name and signature, which is a second
+    # chance that costs nothing and recovers most of the remaining members.
     def index_members(table: dict) -> dict[tuple[str, str], list[tuple[str, str, str]]]:
         index: dict[tuple[str, str], list[tuple[str, str, str]]] = {}
         for (owner, name, descriptor), (obf_owner, obf_name, _) in table.items():
@@ -401,6 +423,47 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
 
     old_methods = index_members(intermediary_old.methods)
     old_fields = index_members(intermediary_old.fields)
+
+    # mojmap-level index of 1.20.1: (owner, member name) -> candidates, used when intermediary names differ.
+    mojmap_index: dict[tuple[str, str], list[tuple[str, str, str]]] = {}
+
+    # Obfuscated class names and obfuscated member names live in different namespaces: `ac` can be both a
+    # class and a field, and they deobfuscate to completely different things. Keep the two apart.
+    def member_names(mappings: MojangMappings) -> dict[tuple[str, str], str]:
+        result: dict[tuple[str, str], str] = {}
+        for (owner, official_name), obfuscated in mappings.members.items():
+            result[(owner, obfuscated)] = official_name
+        return result
+
+    member_names_1201 = member_names(mojang)
+    member_names_1211 = member_names(MojangMappings.read(new_mojmap)) if new_mojmap.exists() else {}
+
+    def add_mojmap(owner: str, obf_name: str, obf_descriptor: str) -> None:
+        official_owner = obf_old_to_official.get(owner)
+        official_name = member_names_1201.get((owner, obf_name))
+        if official_owner and official_name:
+            mojmap_index.setdefault((official_owner, official_name), []).append(
+                (_to_mojmap_descriptor(obf_descriptor, obf_old_to_official), owner, obf_name))
+
+    if new_by_obf:
+        new_name_index: dict[tuple[str, str], tuple[str, str]] = {}
+        for table in (intermediary_new.methods, intermediary_new.fields):
+            for (owner, name, _), (obf_owner, obf_name, _) in table.items():
+                new_name_index.setdefault((owner, name), (obf_owner, obf_name))
+        for table in (intermediary_old.methods, intermediary_old.fields):
+            for (_, _, _), (obf_owner, obf_name, obf_descriptor) in table.items():
+                add_mojmap(obf_owner, obf_name, obf_descriptor)
+    else:
+        new_name_index = {}
+
+    def mojmap_of_new(owner: str, name: str) -> tuple[str, str] | None:
+        """1.21.11 member identity in mojmap terms, used as a second matching key."""
+        obf_owner, obf_name = new_name_index.get((owner, name), (None, None))
+        official_owner = new_by_obf.get(obf_owner)
+        official_name = member_names_1211.get((obf_owner, obf_name))
+        if official_owner and official_name:
+            return official_owner.replace(".", "/"), official_name
+        return None
 
     def match_member(index, owner, name, descriptor):
         """Best 1.20.1 candidate for one 1.21.11 member, or None when the choice would be a guess."""
@@ -452,6 +515,7 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
         return minecraft.has_field(official_owner, srg, target_descriptor)
 
     repaired = 0
+    via_mojmap = 0
     for kind, table, index in (("M", intermediary_new.methods, old_methods),
                                ("F", intermediary_new.fields, old_fields)):
         for (owner, name, descriptor) in table:
@@ -466,7 +530,7 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
                     chosen = (how, srg, target_descriptor)
             if chosen is None:
                 # The overload we guessed at does not exist in 1.20.1; try every other overload of the
-                # same intermediary name before giving up - one of them is the right one.
+                # same intermediary name before falling back to mojmap identity.
                 for other in index.get((owner, name), []):
                     srg, target_descriptor = resolve(other, official_owner)
                     if srg and exists(kind, official_owner, srg, target_descriptor):
@@ -478,7 +542,7 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
                     ambiguous.append(f"{kind} {owner}.{name}{descriptor}")
                 continue
             how, srg, target_descriptor = chosen
-            quality[how if how in quality else "exact"] += 1
+            quality[how] = quality.get(how, 0) + 1
             member_lines.append(f"{kind}\t{owner}\t{name}\t{descriptor}\t{official_owner}\t{srg}\t{target_descriptor}")
 
     target = out_dir / "intermediary-1.21.11-to-srg-1.20.1.txt"
@@ -539,7 +603,8 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
         "tsrg_classes": len(tsrg.classes),
         "match_exact": quality["exact"],
         "match_name_only": quality["name-only"],
-        "match_shape": quality["shape"],
+        "match_shape": quality.get("shape", 0),
+        "match_mojmap": via_mojmap,
         "ambiguous": len(ambiguous),
     }
 

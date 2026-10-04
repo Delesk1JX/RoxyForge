@@ -130,13 +130,24 @@ leaving the upstream NeoForge build untouched. Build with:
         implementations.
       Result: **UNRESOLVED classes 0**, and the link checker now sees our jar, so it measures what the
       game will see.
-- [ ] **M4b** 141 methods and 61 fields are still unresolved, and unlike the classes they are all on
-      real Minecraft classes - for example `Minecraft.method_1548()Lnet/minecraft/client/User;`,
-      `Camera.method_71156()Lnet/minecraft/world/phys/Vec3;`, `WorldVersion.comp_4026()`. Each is a
-      member that exists in 1.20.1 under a name the matcher cannot derive. The next increment should be
-      a **member alias table** (intermediary method -> 1.20.1 SRG name), with the generator proposing
-      candidates by return type and descriptor shape and a human curating them - the same shape as
-      aliases.txt, which is what took class coverage from 93.96% to 95.30%.
+- [~] **M4b** partially done. Current state of the link checker: **0 unresolved classes, 141 methods,
+      55 fields** - all of them on real Minecraft classes, for example
+      `Minecraft.method_1548()Lnet/minecraft/client/User;`, `Camera.method_71156()Vec3`,
+      `WorldVersion.comp_4026()`, `ClientPacketListener.method_45734()ServerData`.
+
+      What was tried:
+      - `propose_member_aliases.py` ranks 1.20.1 candidates for every unresolved member by signature
+        (exact descriptor, then shape, then arity, then return type). It shows most of them have an exact
+        descriptor match, so the mappings are missing rather than impossible.
+      - a second matching stage that keys on **mojmap identity** instead of the intermediary name was
+        added and then removed again: it grew the mapping by ~19 000 entries overall but contributed
+        nothing for Voxy, because the diagnosis is that obfuscated member names are only unique *per
+        owner*, so `ac` as a field name and `ac` as a class name deobfuscate to completely different
+        things. Fixing that properly needs the member maps to be scoped per owner class on both sides
+        (1.21.11 and 1.20.1), which is where this stopped.
+
+      So the honest remaining work for M4b is: scope member deobfuscation per owner class, then curate
+      whatever is still left into structural patches.
 - [ ] **M4c** bridges for Embeddium instead of Sodium.
 - [ ] **M5** feed the remapped jar into the in-game path (SPI) and get the launch stable.
 - [ ] **M6** run in 1.20.1 Forge, verify LODs, screenshots.
