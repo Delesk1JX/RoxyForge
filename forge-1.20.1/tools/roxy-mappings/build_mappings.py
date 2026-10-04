@@ -518,10 +518,10 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
                 if not line or line.startswith("#"):
                     continue
                 parts = line.split()
-                # The SRG client jar does not carry third-party libraries, so the rename targets are
-                # validated against Mojang's own class table instead; the link checker still has the
-                # final say on whether the result links.
-                if len(parts) == 2 and parts[1] in obf_old_to_official.values():
+                # Nothing to validate against: third-party libraries ship as separate jars, so neither
+                # the Minecraft jar nor Mojang's mapping lists them. These entries are hand-curated and the
+                # link checker has the final say on whether the result links.
+                if len(parts) == 2:
                     class_lines.append(f"C\t{parts[0]}\t{parts[1]}")
                     added += 1
         if added:

@@ -34,7 +34,8 @@ import java.util.jar.JarFile;
  */
 public final class VoxyLinkCheckTool {
     private static final int ASM = Opcodes.ASM9;
-    private static final int SHOWN = 40;
+    // The report is the input for make_bridges.py, so it must list every unresolved symbol, not a sample.
+    private static final int SHOWN = 100_000;
 
     /** What the target jars declare. */
     private static final class Index {
