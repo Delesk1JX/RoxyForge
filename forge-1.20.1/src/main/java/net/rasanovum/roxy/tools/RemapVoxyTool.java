@@ -30,6 +30,8 @@ public final class RemapVoxyTool {
 
         RoxyForgeRemapper remapper = new RoxyForgeRemapper(mappings);
         RoxyForgeRemapper.Report report = remapper.remapJar(voxyJar, outputJar);
+        System.out.println("bridge call sites rewritten: "
+                + net.rasanovum.roxy.loader.RoxyBridgeRedirect.totalRedirects());
 
         StringBuilder text = new StringBuilder();
         text.append("classes in: ").append(report.classesIn()).append('\n');

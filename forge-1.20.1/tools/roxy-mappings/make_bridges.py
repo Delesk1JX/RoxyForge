@@ -1,25 +1,22 @@
 """Turn the link checker's unresolved members into bridge methods, and tell the remapper about them.
 
 A bridge is a static method we own that stands in for a Minecraft call Voxy makes but 1.20.1 cannot
-satisfy. The remapper rewrites `Owner.member(args)` into `RoxyBridge.member_NNN(Owner self, args)`, so
-Voxy links and we implement the body against the 1.20.1 API later.
+satisfy. The remapper rewrites `Owner.member(args)` into `RoxyBridge.mNNNN(owner, args)`, so Voxy links
+and the body can be implemented against the 1.20.1 API later.
 
-Outputs:
-    roxy-mappings/bridges.txt                       M|F <owner> <name><descriptor> <bridge name>
-    src/main/java/net/rasanovum/roxy/bridge/RoxyBridge.java
+Bridges are **additive**: once a call site has been redirected its bridge has to stay, otherwise the next
+round - which only knows about what is still unresolved - drops it and the count oscillates instead of
+shrinking. So bridges.txt carries the arity of every entry, which is all that is needed to regenerate
+RoxyBridge.java from the whole accumulated table.
+
+    bridges.txt line: <M|F> <owner> <member> <bridge> <arity>
+    the member is spelled the way the bytecode spells it (name and descriptor glued)
 
     make_bridges.py <link report> <mapping dir> <source dir>
 """
 import re
 import sys
 from pathlib import Path
-
-JAVA_KEYWORDS = {"abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class",
-                 "const", "continue", "default", "do", "double", "else", "enum", "extends", "final",
-                 "finally", "float", "for", "goto", "if", "implements", "import", "instanceof", "int",
-                 "interface", "long", "native", "new", "package", "private", "protected", "public",
-                 "return", "short", "static", "strictfp", "super", "switch", "synchronized", "this",
-                 "throw", "throws", "transient", "try", "void", "volatile", "while"}
 
 PRIMITIVES = {"V", "Z", "B", "C", "S", "I", "J", "F", "D"}
 NAME_AND_DESCRIPTOR = re.compile(r"^([A-Za-z_$][\w$]*?)((?:\[[BCDFIJSZV]|L[\w$/]+;).*)$")
@@ -53,10 +50,6 @@ def split_parameters(descriptor: str) -> list[str]:
     return parameters
 
 
-def safe(name: str) -> str:
-    return f"`{name}`" if name in JAVA_KEYWORDS else name
-
-
 def split_field(entry: str) -> tuple[str, str]:
     """Split a field reference into name and descriptor.
 
@@ -87,16 +80,12 @@ def main() -> None:
                 continue
             entry = line.split(None, 1)[1].strip()
             owner, _, member = entry.partition(".")
-            if "(" in member:
-                rows.append(("M", owner, member, True))
-            else:
-                name, descriptor = split_field(member)
-                rows.append(("F", owner, name + descriptor, False))
+            rows.append(("M" if is_method else "F", owner, member, is_method))
 
-    # The link checker reports names *after* remapping, but the remapper sees the original intermediary
-    # names. Members that had no mapping keep their intermediary name, so the source key only needs the
-    # owner and the descriptor classes mapped back.
+    # The link checker reports names *after* remapping, while the remapper sees the original intermediary
+    # names. A member the remapper already renamed has to be inverted as well, or the bridge never fires.
     inverse_class: dict[str, str] = {}
+    member_inverse: dict[tuple[str, str], tuple[str, str, str]] = {}
     mapping_file = mapping_dir / "intermediary-1.21.11-to-srg-1.20.1.txt"
     if mapping_file.exists():
         for line in mapping_file.read_text(encoding="utf-8").splitlines():
@@ -104,6 +93,17 @@ def main() -> None:
                 parts = line.split("\t")
                 if len(parts) >= 3:
                     inverse_class[parts[2]] = parts[1]
+                continue
+            if not line or line[0] == "#":
+                continue
+            parts = line.split("\t")
+            if len(parts) >= 7:
+                # Keyed by owner, target name *and* target descriptor. Without the descriptor, overloads
+                # collide: every overload of one obfuscated name shares the source name but not the SRG
+                # one, so a lookup without it can return a completely different method.
+                key = (parts[4], parts[5], parts[6])
+                if key not in member_inverse:
+                    member_inverse[key] = (parts[1], parts[2], parts[3])
 
     def de_remap(descriptor: str) -> str:
         out = []
@@ -123,135 +123,130 @@ def main() -> None:
             index = end + 1
         return "".join(out)
 
-    # Members the remapper *did* rename need their name inverted too: the report shows the SRG name, but
-    # the bytecode still has the intermediary one. This index is the exact reverse of the mapping.
-    member_inverse: dict[tuple[str, str, str], tuple[str, str, str]] = {}
-    mapping_file = mapping_dir / "intermediary-1.21.11-to-srg-1.20.1.txt"
-    if mapping_file.exists():
-        for line in mapping_file.read_text(encoding="utf-8").splitlines():
-            if not line or line[0] == "#" or line[0] == "C":
-                continue
-            parts = line.split("\t")
-            if len(parts) < 7:
-                continue
-            kind, source_owner, source_name, source_descriptor, target_owner, target_name, target_descriptor = parts[:7]
-            # Keyed by owner and SRG name only: the repair stage may have settled on a different overload,
-            # and every overload of one obfuscated name shares the source name anyway.
-            key = (target_owner, target_name)
-            if key not in member_inverse:
-                member_inverse[key] = (source_owner, source_name, source_descriptor)
-
     def source_key(owner: str, member: str, is_method: bool) -> str | None:
         if is_method:
             name = member.split("(")[0]
             descriptor = member[member.index("("):]
         else:
             name, descriptor = split_field(member)
-        exact = member_inverse.get((owner, name))
+        exact = member_inverse.get((owner, name, descriptor))
+        if exact is None:
+            # The repair stage can settle on a different overload, so fall back to the same name whose
+            # signature has the same shape.
+            wanted = re.sub(r"L[\w$/]+;", "L;", descriptor)
+            for (candidate_owner, candidate_name, candidate_descriptor), value in member_inverse.items():
+                if candidate_owner == owner and candidate_name == name \
+                        and re.sub(r"L[\w$/]+;", "L;", candidate_descriptor) == wanted:
+                    exact = value
+                    break
         if exact:
             source_owner, source_name, source_descriptor = exact
-            member = f"{source_name}{source_descriptor}" if is_method else f"{source_name}{source_descriptor}"
-            return f"{source_owner}.{member}"
-        # No mapping for this member: it was left in the intermediary namespace, so only the owner and the
+            return f"{source_owner}.{source_name}{source_descriptor}"
+        # No mapping for this member: it stayed in the intermediary namespace, so only the owner and the
         # descriptor classes need mapping back. Shim classes (net/minecraft/class_XXXX) have no class
         # mapping at all and arrive with the owner already in the right namespace.
         source_owner = inverse_class.get(owner, owner)
         return f"{source_owner}.{name}{de_remap(descriptor)}"
 
     mapping_dir.mkdir(parents=True, exist_ok=True)
-
-    # Bridges are additive: once a call site has been redirected its bridge has to stay, otherwise the next
-    # round loses it and the unresolved count oscillates instead of shrinking.
-    existing: dict[tuple[str, str], str] = {}
     bridge_file = mapping_dir / "bridges.txt"
+
+    # kind, key -> (bridge, arity) and bridge -> (kind, arity, doc)
+    entries: dict[tuple[str, str], tuple[str, int]] = {}
+    bridges: dict[str, tuple[str, int, str]] = {}
     if bridge_file.exists():
         for line in bridge_file.read_text(encoding="utf-8").splitlines():
             parts = line.split("\t")
-            if len(parts) >= 4:
-                existing[(parts[0], f"{parts[1]}.{parts[2]}")] = parts[3]
-    next_index = 1 + max((int(name[1:]) for name in existing.values()), default=0)
+            if len(parts) < 5:
+                continue
+            kind, owner, member, bridge, arity = parts[0], parts[1], parts[2], parts[3], int(parts[4])
+            entries[(kind, f"{owner}.{member}")] = (bridge, arity)
+            bridges.setdefault(bridge, (kind, arity, f"{owner}.{member}"))
 
-    bridge_lines: list[str] = []
-    for (kind, key), known in sorted(existing.items(), key=lambda item: item[1]):
-        owner, _, member = key.partition(".")
-        bridge_lines.append(f"{kind}\t{owner}\t{member}\t{known}")
+    next_index = 1 + max((int(name[1:]) for name in bridges), default=0)
 
-    methods: list[str] = []
-    counter = 0
+    def note(kind: str, owner: str, member: str, bridge: str, arity: int) -> None:
+        entries[(kind, f"{owner}.{member}")] = (bridge, arity)
+
     fresh = 0
     for kind, owner, member, is_method in rows:
-        counter += 1
-        # The bridge list is keyed the way the bytecode spells the member: name and descriptor glued
-        # together, which is what the redirect builds its lookup key from.
-        if is_method:
-            key_member = member
-        else:
-            key_member = "".join(split_field(member))
+        key_member = member if is_method else "".join(split_field(member))
         source = source_key(owner, member, is_method)
-        known = existing.get((kind, f"{owner}.{key_member}"))
+        known = entries.get((kind, f"{owner}.{key_member}"))
         if known is None and source:
-            known = existing.get((kind, source))
+            known = entries.get((kind, source))
         if known is not None:
-            bridge_lines.append(f"{kind}\t{owner}\t{key_member}\t{known}")
+            note(kind, owner, key_member, known[0], known[1])
             if source:
                 source_owner, _, rest = source.partition(".")
-                bridge_lines.append(f"{kind}\t{source_owner}\t{rest}\t{known}")
+                note(kind, source_owner, rest, known[0], known[1])
             continue
+
         bridge = f"m{next_index:04d}"
         next_index += 1
         fresh += 1
-        bridge_lines.append(f"{kind}\t{owner}\t{key_member}\t{bridge}")
-        if source:
-            name, _, rest = source.partition(".")
-            bridge_lines.append(f"{kind}\t{name}\t{rest}\t{bridge}")
-
-        owner_type = owner.replace("/", ".")
         if is_method:
+            descriptor = member[member.index("("):]
+            arity = len(split_parameters(descriptor))
+        else:
+            arity = 1
+        note(kind, owner, key_member, bridge, arity)
+        if source:
+            source_owner, _, rest = source.partition(".")
+            note(kind, source_owner, rest, bridge, arity)
+        bridges[bridge] = (kind, arity, f"{owner}.{member}")
+
+    bridge_lines = [f"{kind}\t{key.partition('.')[0]}\t{key.partition('.')[2]}\t{bridge}\t{arity}"
+                    for (kind, key), (bridge, arity) in sorted(entries.items(), key=lambda item: item[1][0])]
+    # Name-only aliases: the redirect sees the descriptor before remapping, which does not match the
+    # target-space key the report produced, so every bridge also gets a bare owner.name key.
+    alias_lines = []
+    for (kind, key), (bridge, arity) in sorted(entries.items(), key=lambda item: item[1][0]):
+        owner, _, member = key.partition(".")
+        simple = member.split("(")[0] if "(" in member else split_field(member)[0]
+        alias_lines.append(f"K\t{owner}\t{simple}\t{bridge}\t{arity}")
+    bridge_file.write_text("\n".join(bridge_lines + alias_lines) + "\n", encoding="utf-8")
+
+    methods: list[str] = []
+    for bridge, (kind, arity, doc) in sorted(bridges.items()):
+        owner, _, member = doc.partition(".")
+        if kind == "M":
             name = member.split("(")[0]
             descriptor = member[member.index("("):]
-            count = len(split_parameters(descriptor))
-            # Object-based signatures on purpose: several of the types involved are package-private in
-            # Minecraft (ClientChunkCache$Storage and friends) and cannot be named from our package. The
-            # real types stay in the javadoc and in bridges.txt for whoever implements the body.
-            arguments = ["Object self"] + [f"Object argument{position}" for position in range(count)]
+            returns = java_type(descriptor[descriptor.rindex(")") + 1:])
+            instance_args = ", ".join(["Object self"] + [f"Object argument{position}"
+                                                       for position in range(arity)])
+            static_args = ", ".join(f"Object argument{position}" for position in range(arity))
             methods.append(
-                f"    /** Voxy calls {owner}.{name}{descriptor}, which 1.20.1 does not have.\n"
-                f"     *  Owner type: {owner_type}, returns "
-                f"{java_type(descriptor[descriptor.rindex(')') + 1:])}. */\n"
-                f"    public static Object {bridge}({', '.join(arguments)}) {{\n"
-                f"        throw new UnsupportedOperationException(\"RoxyForge bridge {bridge}: "
-                f"{owner}.{name}\");\n"
+                f"    /** Voxy calls {doc}, which 1.20.1 does not have.\n"
+                f"     *  Returns {returns}. */\n"
+                f"    public static Object {bridge}({instance_args}) {{\n"
+                f"        throw new UnsupportedOperationException(\"RoxyForge bridge {bridge}: {doc}\");\n"
                 f"    }}\n"
-                f"    public static Object {bridge}Static({', '.join(arguments[1:]) or ''}) {{\n"
+                f"    public static Object {bridge}Static({static_args}) {{\n"
                 f"        throw new UnsupportedOperationException(\"RoxyForge bridge {bridge} (static): "
-                f"{owner}.{name}\");\n"
-                f"    }}\n"
-                f"    // TODO: implement {bridge} and {bridge}Static against the 1.20.1 API")
+                f"{doc}\");\n"
+                f"    }}")
         else:
             name, descriptor = split_field(member)
-            field_type = java_type(descriptor)
             methods.append(
-                f"    /** Voxy reads {owner}.{name} ({descriptor}), which 1.20.1 does not have.\n"
-                f"     *  Type: {field_type}. */\n"
+                f"    /** Voxy reads {doc}, which 1.20.1 does not have.\n"
+                f"     *  Type: {java_type(descriptor)}. */\n"
                 f"    public static Object {bridge}(Object self) {{\n"
-                f"        throw new UnsupportedOperationException(\"RoxyForge bridge {bridge}: "
-                f"{owner}.{name}\");\n"
+                f"        throw new UnsupportedOperationException(\"RoxyForge bridge {bridge}: {doc}\");\n"
                 f"    }}\n"
                 f"    public static void {bridge}Set(Object self, Object value) {{\n"
                 f"        throw new UnsupportedOperationException(\"RoxyForge bridge {bridge} (set): "
-                f"{owner}.{name}\");\n"
+                f"{doc}\");\n"
                 f"    }}\n"
                 f"    public static Object {bridge}StaticGet() {{\n"
                 f"        throw new UnsupportedOperationException(\"RoxyForge bridge {bridge} "
-                f"(static get): {owner}.{name}\");\n"
+                f"(static get): {doc}\");\n"
                 f"    }}\n"
                 f"    public static void {bridge}StaticSet(Object value) {{\n"
                 f"        throw new UnsupportedOperationException(\"RoxyForge bridge {bridge} "
-                f"(static set): {owner}.{name}\");\n"
-                f"    }}\n"
-                f"    // TODO: implement the {bridge} accessors against the 1.20.1 API")
-
-    (mapping_dir / "bridges.txt").write_text("\n".join(bridge_lines) + "\n", encoding="utf-8")
+                f"(static set): {doc}\");\n"
+                f"    }}")
 
     java_dir = source_dir / "src" / "main" / "java" / "net" / "rasanovum" / "roxy" / "bridge"
     java_dir.mkdir(parents=True, exist_ok=True)
@@ -265,18 +260,18 @@ def main() -> None:
         " * checker reported, and wired up by RoxyForgeRemapper: a call to\n"
         " * {@code Owner.member(args)} is rewritten into {@code RoxyBridge.mNNNN(owner, args)}.\n"
         " *\n"
-        " * Every body throws on purpose. This milestone is \"Voxy links on 1.20.1\"; implementing the\n"
-        " * bodies against the 1.20.1 API is the next one, and the game run is what shows which of these\n"
-        " * calls Voxy actually needs at runtime.\n"
+        " * Signatures are Object based because several of the types involved are package-private in\n"
+        " * Minecraft and cannot be named from our package; the real types are in the javadoc and in\n"
+        " * bridges.txt. Bodies throw on purpose: this milestone is \"Voxy links on 1.20.1\", and the game\n"
+        " * run is what shows which of these calls Voxy actually needs at runtime.\n"
         " */\n"
         "public final class RoxyBridge {\n"
         "    private RoxyBridge() {\n"
         "    }\n"
         "\n" + "\n".join(methods) + "\n}\n", encoding="utf-8")
 
-    methods_count = sum(1 for row in rows if row[3])
-    print(f"{len(rows)} bridges ({methods_count} methods, {len(rows) - methods_count} fields)")
-    print(f"wrote {mapping_dir / 'bridges.txt'} and {java_dir / 'RoxyBridge.java'}")
+    print(f"report rows: {len(rows)}  bridges: {len(bridges)}  new this round: {fresh}")
+    print(f"wrote {bridge_file} and {java_dir / 'RoxyBridge.java'}")
 
 
 if __name__ == "__main__":

@@ -20,6 +20,10 @@ import java.util.Map;
 public final class RoxyForgeMappings {
     private final Map<String, String> classes = new HashMap<>();
     private final Map<String, String> members = new HashMap<>();
+    /** Target (Mojang) class name -> intermediary, so a rewrite can be found from either side. */
+    private final Map<String, String> classSources = new HashMap<>();
+    /** "targetOwner.targetName" -> "intermediaryOwner.intermediaryName", for the same reason. */
+    private final Map<String, String> memberSources = new HashMap<>();
 
     public static RoxyForgeMappings load(Path file) throws IOException {
         RoxyForgeMappings mappings = new RoxyForgeMappings();
@@ -31,13 +35,32 @@ public final class RoxyForgeMappings {
                 }
                 String[] parts = line.split("\t");
                 switch (parts[0]) {
-                    case "C" -> mappings.classes.put(parts[1], parts[2]);
-                    case "M", "F" -> mappings.members.put(key(parts[1], parts[2], parts[3]), parts[5]);
+                    case "C" -> {
+                        mappings.classes.put(parts[1], parts[2]);
+                        mappings.classSources.put(parts[2], parts[1]);
+                    }
+                    case "M", "F" -> {
+                        mappings.members.put(key(parts[1], parts[2], parts[3]), parts[5]);
+                        if (parts.length > 6) {
+                            mappings.memberSources.put(parts[4] + '.' + parts[5],
+                                    parts[1] + '.' + parts[2]);
+                        }
+                    }
                     default -> { }
                 }
             }
         }
         return mappings;
+    }
+
+    /** The intermediary name behind a target class name, or the name itself when it is not mapped. */
+    public String sourceClass(String targetName) {
+        return classSources.getOrDefault(targetName, targetName);
+    }
+
+    /** "owner.name" in the intermediary namespace, or null when the member is not mapped. */
+    public String sourceMember(String targetOwner, String targetName) {
+        return memberSources.get(targetOwner + '.' + targetName);
     }
 
     private static String key(String owner, String name, String descriptor) {

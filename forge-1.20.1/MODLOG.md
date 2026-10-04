@@ -130,20 +130,27 @@ leaving the upstream NeoForge build untouched. Build with:
         implementations.
       Result: **UNRESOLVED classes 0**, and the link checker now sees our jar, so it measures what the
       game will see.
-- [~] **M4b** currently at **0 unresolved classes, 39 methods, 14 fields**, and the biggest single
-      win came from inverting the *member name* when building the bridge source key. The link checker
-      reports names *after* remapping, so for a member the remapper had already renamed to an SRG name the
-      source key was inheriting that new name - while the bytecode still had `method_231547`. Building the
-      inverse index from the mapping file (target owner + SRG name -> source owner + intermediary name)
-      took the matching source keys from **29 to 116 of 136**, and one full bridge round took the
-      remainder from 120/50 to 39/14.
-
-      Known open issue: the round does not converge on its own. Bridges are additive - once a call site is
-      redirected the bridge has to stay - but make_bridges.py regenerates the list from the current report,
-      so the next round loses the bridges it cannot see in that report. Accumulating them instead
-      (keeping existing entries) needs the signatures stored in bridges.txt as well, otherwise
-      RoxyBridge.java is regenerated with only the newest methods and the jar stops compiling. That is
-      the concrete next step; the verified state above is the one to reproduce.
+- [~] **M4b** nearly closed: **0 unresolved classes, 1 method, 0 fields** (started at 13 classes /
+      141 methods / 61 fields). 306 call sites now redirect into bridges.
+      What made the difference, in order:
+      1. `SHOWN` in the link checker listed only the top 40 entries per section while counting them all, so
+         the bridge generator only ever saw a sample.
+      2. Bridges have to be **additive**: bridges.txt now stores the arity of every entry, so
+         RoxyBridge.java is regenerated from the whole accumulated table and old bridges survive rounds.
+      3. Bridge keys are stored **both** as the report spells them (target names) and as a bare
+         `owner.name` alias, and the redirect resolves either side: it asks the mapping for the target name
+         of the exact owner/name/descriptor it is looking at.
+      4. The member reverse index needs the **descriptor** in its key. Without it, overloads collide and
+         `Direction.m_235666_(I)Direction` resolved to a completely different method
+         (`class_2350.method_42013()Stream`). That single fix took the remainder from 15 to 1.
+      Left: `ResourceLocation.method_60654(String)ResourceLocation`. Its owner has no entry in the class
+      mapping, so the source key cannot be inverted - the bridge exists only under the target-space key and
+      the redirect has no way to recognise the call site. Either the class mapping gains the owner, or the
+      redirect falls back to matching on the method name alone when the owner is unmapped.
+- [ ] **M4d** implement the bridge bodies against the 1.20.1 API. Every body throws
+      `UnsupportedOperationException` on purpose, so this milestone is "Voxy links on 1.20.1".
+- [ ] **M5** feed the remapped jar into the in-game path (SPI) and get the launch stable.
+- [ ] **M6** run in 1.20.1 Forge, verify LODs, screenshots.
       Fixes this round: bridge keys are written the way the **bytecode** spells the member (name and
       descriptor glued), because that is what the redirect's lookup key is built from; fields also accept
       the older concatenated form so a stale report cannot silently produce broken keys; shim classes

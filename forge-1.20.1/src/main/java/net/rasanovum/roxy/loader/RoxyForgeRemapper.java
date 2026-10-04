@@ -144,7 +144,7 @@ public final class RoxyForgeRemapper {
                 return name;
             }
         };
-        reader.accept(new RoxyBridgeRedirect(new ClassRemapper(writer, remapper), bridgeList), 0);
+        reader.accept(new RoxyBridgeRedirect(new ClassRemapper(writer, remapper), bridgeList, mappings), 0);
         return writer.toByteArray();
     }
 

@@ -24,18 +24,43 @@ import java.util.Map;
  * Bridge parameters are {@code Object} because several of the types involved are package-private in
  * Minecraft and cannot be named from our package; the real types stay in the javadoc and in bridges.txt.
  */
-final class RoxyBridgeRedirect extends ClassVisitor {
+public final class RoxyBridgeRedirect extends ClassVisitor {
     private static final String BRIDGE_OWNER = "net/rasanovum/roxy/bridge/RoxyBridge";
     private static final String OBJECT = "Ljava/lang/Object;";
 
     private final Map<String, String> methodBridges = new HashMap<>();
     private final Map<String, String> fieldBridges = new HashMap<>();
+    private final RoxyForgeMappings mappings;
 
-    RoxyBridgeRedirect(ClassVisitor next, Path bridgeList) {
+    RoxyBridgeRedirect(ClassVisitor next, Path bridgeList, RoxyForgeMappings mappings) {
         super(Opcodes.ASM9, next);
+        this.mappings = mappings;
         if (bridgeList != null && Files.exists(bridgeList)) {
             load(bridgeList);
         }
+    }
+
+    /**
+     * Bridges are keyed by the names the link checker saw, which are the *target* names. The remapper works
+     * on the original intermediary names, so a lookup can miss; this resolves both spellings.
+     */
+    private String lookup(Map<String, String> bridges, String owner, String member, String simpleName,
+                          String descriptor) {
+        String direct = bridges.get(owner + '.' + member);
+        if (direct != null || mappings == null) {
+            return direct;
+        }
+        // The bridge list is keyed by target names, the remapper sees intermediary ones. Ask the mapping
+        // for the target name of this exact owner/name/descriptor, then use the name-only alias: overloads
+        // share an intermediary name but not an SRG one, so the descriptor has to be part of the lookup.
+        String targetOwner = mappings.mapClass(owner);
+        String targetName = mappings.mapMember(owner, simpleName, descriptor);
+        String viaAlias = bridges.get(targetOwner + '.' + targetName);
+        if (viaAlias != null) {
+            return viaAlias;
+        }
+        String full = bridges.get(targetOwner + '.' + targetName + descriptor);
+        return full != null ? full : bridges.get(targetOwner + '.' + member);
     }
 
     private void load(Path file) {
@@ -48,8 +73,12 @@ final class RoxyBridgeRedirect extends ClassVisitor {
                 String key = parts[1] + '.' + parts[2];
                 if (parts[0].equals("M")) {
                     methodBridges.put(key, parts[3]);
-                } else {
+                } else if (parts[0].equals("F")) {
                     fieldBridges.put(key, parts[3]);
+                } else {
+                    // "K" is a name-only alias, usable for both a method and a field.
+                    methodBridges.putIfAbsent(key, parts[3]);
+                    fieldBridges.putIfAbsent(key, parts[3]);
                 }
             }
         } catch (IOException problem) {
@@ -59,6 +88,12 @@ final class RoxyBridgeRedirect extends ClassVisitor {
 
     int size() {
         return methodBridges.size() + fieldBridges.size();
+    }
+    private static int redirects;
+
+    /** How many call sites were rewritten in this pass - the number that says whether a bridge works. */
+    public static int totalRedirects() {
+        return redirects;
     }
 
     @Override
@@ -76,15 +111,13 @@ final class RoxyBridgeRedirect extends ClassVisitor {
         @Override
         public void visitMethodInsn(int opcode, String owner, String name, String descriptor,
                                     boolean isInterface) {
-            String bridge = methodBridges.get(owner + '.' + name + descriptor);
-            if (bridge == null) {
-                bridge = methodBridges.get(owner + '.' + name);
-            }
+            String bridge = lookup(methodBridges, owner, name + descriptor, name, descriptor);
             if (bridge == null) {
                 super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
                 return;
             }
             boolean isStatic = opcode == Opcodes.INVOKESTATIC;
+            redirects++;
             super.visitMethodInsn(Opcodes.INVOKESTATIC, BRIDGE_OWNER,
                     isStatic ? bridge + "Static" : bridge,
                     descriptorFor(arity(descriptor), !isStatic), false);
@@ -92,10 +125,7 @@ final class RoxyBridgeRedirect extends ClassVisitor {
 
         @Override
         public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
-            String bridge = fieldBridges.get(owner + '.' + name + descriptor);
-            if (bridge == null) {
-                bridge = fieldBridges.get(owner + '.' + name);
-            }
+            String bridge = lookup(fieldBridges, owner, name + descriptor, name, descriptor);
             if (bridge == null) {
                 super.visitFieldInsn(opcode, owner, name, descriptor);
                 return;
