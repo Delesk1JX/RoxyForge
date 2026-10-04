@@ -506,6 +506,26 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
     if mc_jar and Path(mc_jar).exists():
         from mcindex import JarIndex
         minecraft = JarIndex.read(Path(mc_jar))
+
+        # Third-party libraries are never obfuscated, so Fabric's intermediary mapping has no entries
+        # for them and the generator cannot line them up. class-renames.txt carries those by hand, and
+        # each target is checked against Minecraft before it goes into the mapping.
+        renames_file = Path(__file__).resolve().parent / "class-renames.txt"
+        added = 0
+        if renames_file.exists():
+            for line in renames_file.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                parts = line.split()
+                # The SRG client jar does not carry third-party libraries, so the rename targets are
+                # validated against Mojang's own class table instead; the link checker still has the
+                # final say on whether the result links.
+                if len(parts) == 2 and parts[1] in obf_old_to_official.values():
+                    class_lines.append(f"C\t{parts[0]}\t{parts[1]}")
+                    added += 1
+        if added:
+            print(f"class renames added: {added}")
         if server_jar and Path(server_jar).exists():
             # The Mojang server jar ships obfuscated, so its classes need the 1.20.1 mojmap to be indexed.
             for facts in JarIndex.read(Path(server_jar), mojang.classes).classes.values():
