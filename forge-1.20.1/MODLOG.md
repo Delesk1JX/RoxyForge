@@ -130,20 +130,20 @@ leaving the upstream NeoForge build untouched. Build with:
         implementations.
       Result: **UNRESOLVED classes 0**, and the link checker now sees our jar, so it measures what the
       game will see.
-- [~] **M4b** state: 0 unresolved classes, and the bridge mechanism works, but the remaining members
-      **oscillate** between two values depending on the round (96/40 -> 46/14 -> 96/40) instead of
-      converging to zero. Two causes found this round:
-      - the link report only **listed** the top 40 entries per section while counting all of them, so
-        make_bridges.py was generating bridges for a sample and never the whole set. `SHOWN` now lists
-        everything, and a full round takes the remainder from 96/40 down to **46/14**.
-      - the joml lead was real and is now wired: third-party libraries ship as separate jars, so they are
-        in neither the Minecraft jar nor Mojang's mapping, which is why the renames were being skipped.
-        class-renames.txt entries are accepted as hand-curated now (Vector3fc -> Vector3f and friends).
-      Open: after a full bridge round the next round regresses, which means the bridges generated for the
-      new set do not fire. The prime suspect is the *source* key: it is built by mapping the owner and
-      the descriptor classes back through the class mapping, and any descriptor class that has no class
-      mapping (again, third-party) leaves the source key in the wrong namespace. Next step: print a few
-      source keys next to the actual instruction owners in the remapped jar and compare.
+- [~] **M4b** currently at **0 unresolved classes, 39 methods, 14 fields**, and the biggest single
+      win came from inverting the *member name* when building the bridge source key. The link checker
+      reports names *after* remapping, so for a member the remapper had already renamed to an SRG name the
+      source key was inheriting that new name - while the bytecode still had `method_231547`. Building the
+      inverse index from the mapping file (target owner + SRG name -> source owner + intermediary name)
+      took the matching source keys from **29 to 116 of 136**, and one full bridge round took the
+      remainder from 120/50 to 39/14.
+
+      Known open issue: the round does not converge on its own. Bridges are additive - once a call site is
+      redirected the bridge has to stay - but make_bridges.py regenerates the list from the current report,
+      so the next round loses the bridges it cannot see in that report. Accumulating them instead
+      (keeping existing entries) needs the signatures stored in bridges.txt as well, otherwise
+      RoxyBridge.java is regenerated with only the newest methods and the jar stops compiling. That is
+      the concrete next step; the verified state above is the one to reproduce.
       Fixes this round: bridge keys are written the way the **bytecode** spells the member (name and
       descriptor glued), because that is what the redirect's lookup key is built from; fields also accept
       the older concatenated form so a stale report cannot silently produce broken keys; shim classes

@@ -15,628 +15,1468 @@ public final class RoxyBridge {
     private RoxyBridge() {
     }
 
-    /** Voxy calls net/minecraft/client/OptionInstance.m_231547_()Ljava/lang/Object;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.OptionInstance, returns java.lang.Object. */
+    /** Voxy calls net/minecraft/WorldVersion.comp_4026()Lnet/minecraft/world/level/storage/DataVersion;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.WorldVersion, returns net.minecraft.world.level.storage.DataVersion. */
     public static Object m0001(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0001: net/minecraft/client/OptionInstance.m_231547_");
+        throw new UnsupportedOperationException("RoxyForge bridge m0001: net/minecraft/WorldVersion.comp_4026");
     }
     public static Object m0001Static() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0001 (static): net/minecraft/client/OptionInstance.m_231547_");
+        throw new UnsupportedOperationException("RoxyForge bridge m0001 (static): net/minecraft/WorldVersion.comp_4026");
     }
     // TODO: implement m0001 and m0001Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/client/model/geom/ModelPart.method_68509(Lnet/minecraft/core/Direction;)Ljava/util/List;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.model.geom.ModelPart, returns java.util.List. */
-    public static Object m0002(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0002: net/minecraft/client/model/geom/ModelPart.method_68509");
+    /** Voxy calls net/minecraft/client/Camera.method_71156()Lnet/minecraft/world/phys/Vec3;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.Camera, returns net.minecraft.world.phys.Vec3. */
+    public static Object m0002(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0002: net/minecraft/client/Camera.method_71156");
     }
-    public static Object m0002Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0002 (static): net/minecraft/client/model/geom/ModelPart.method_68509");
+    public static Object m0002Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0002 (static): net/minecraft/client/Camera.method_71156");
     }
     // TODO: implement m0002 and m0002Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/client/multiplayer/ClientChunkCache$Storage.m_104481_(I)Lnet/minecraft/world/level/chunk/LevelChunk;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.multiplayer.ClientChunkCache$Storage, returns net.minecraft.world.level.chunk.LevelChunk. */
-    public static Object m0003(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0003: net/minecraft/client/multiplayer/ClientChunkCache$Storage.m_104481_");
+    /** Voxy calls net/minecraft/client/Minecraft.method_1522()Lcom/mojang/blaze3d/pipeline/RenderTarget;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.Minecraft, returns com.mojang.blaze3d.pipeline.RenderTarget. */
+    public static Object m0003(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0003: net/minecraft/client/Minecraft.method_1522");
     }
-    public static Object m0003Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0003 (static): net/minecraft/client/multiplayer/ClientChunkCache$Storage.m_104481_");
+    public static Object m0003Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0003 (static): net/minecraft/client/Minecraft.method_1522");
     }
     // TODO: implement m0003 and m0003Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/client/multiplayer/ClientChunkCache.m_104448_(IILnet/minecraft/world/level/chunk/ChunkStatus;Z)Lnet/minecraft/world/level/chunk/LevelChunk;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.multiplayer.ClientChunkCache, returns net.minecraft.world.level.chunk.LevelChunk. */
-    public static Object m0004(Object self, Object argument0, Object argument1, Object argument2, Object argument3) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0004: net/minecraft/client/multiplayer/ClientChunkCache.m_104448_");
+    /** Voxy calls net/minecraft/client/Minecraft.method_40000(Ljava/lang/Runnable;)V, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.Minecraft, returns void. */
+    public static Object m0004(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0004: net/minecraft/client/Minecraft.method_40000");
     }
-    public static Object m0004Static(Object argument0, Object argument1, Object argument2, Object argument3) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0004 (static): net/minecraft/client/multiplayer/ClientChunkCache.m_104448_");
+    public static Object m0004Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0004 (static): net/minecraft/client/Minecraft.method_40000");
     }
     // TODO: implement m0004 and m0004Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/client/multiplayer/chat/ChatListener.m_240688_(Lnet/minecraft/network/chat/Component;Z)V, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.multiplayer.chat.ChatListener, returns void. */
-    public static Object m0005(Object self, Object argument0, Object argument1) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0005: net/minecraft/client/multiplayer/chat/ChatListener.m_240688_");
+    /** Voxy calls net/minecraft/client/Minecraft.method_61966()Lnet/minecraft/class_9779;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.Minecraft, returns net.minecraft.class_9779. */
+    public static Object m0005(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0005: net/minecraft/client/Minecraft.method_61966");
     }
-    public static Object m0005Static(Object argument0, Object argument1) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0005 (static): net/minecraft/client/multiplayer/chat/ChatListener.m_240688_");
+    public static Object m0005Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0005 (static): net/minecraft/client/Minecraft.method_61966");
     }
     // TODO: implement m0005 and m0005Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/client/renderer/GameRenderer.m_253088_(F)Lorg/joml/Matrix4f;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.renderer.GameRenderer, returns org.joml.Matrix4f. */
-    public static Object m0006(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0006: net/minecraft/client/renderer/GameRenderer.m_253088_");
+    /** Voxy calls net/minecraft/client/OptionInstance.m_231547_()Ljava/lang/Object;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.OptionInstance, returns java.lang.Object. */
+    public static Object m0006(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0006: net/minecraft/client/OptionInstance.m_231547_");
     }
-    public static Object m0006Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0006 (static): net/minecraft/client/renderer/GameRenderer.m_253088_");
+    public static Object m0006Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0006 (static): net/minecraft/client/OptionInstance.m_231547_");
     }
     // TODO: implement m0006 and m0006Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/client/renderer/ItemBlockRenderTypes.method_23679(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.renderer.ItemBlockRenderTypes, returns net.minecraft.client.renderer.chunk.ChunkRenderDispatcher$RenderChunk. */
-    public static Object m0007(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0007: net/minecraft/client/renderer/ItemBlockRenderTypes.method_23679");
+    /** Voxy calls net/minecraft/client/Options.method_42503()Lnet/minecraft/client/OptionInstance;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.Options, returns net.minecraft.client.OptionInstance. */
+    public static Object m0007(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0007: net/minecraft/client/Options.method_42503");
     }
-    public static Object m0007Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0007 (static): net/minecraft/client/renderer/ItemBlockRenderTypes.method_23679");
+    public static Object m0007Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0007 (static): net/minecraft/client/Options.method_42503");
     }
     // TODO: implement m0007 and m0007Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/client/renderer/ItemBlockRenderTypes.method_23680(Lnet/minecraft/world/level/material/FluidState;)Lnet/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.renderer.ItemBlockRenderTypes, returns net.minecraft.client.renderer.chunk.ChunkRenderDispatcher$RenderChunk. */
-    public static Object m0008(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0008: net/minecraft/client/renderer/ItemBlockRenderTypes.method_23680");
+    /** Voxy calls net/minecraft/client/color/block/BlockColor.getColor(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;I)I, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.color.block.BlockColor, returns int. */
+    public static Object m0008(Object self, Object argument0, Object argument1, Object argument2, Object argument3) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0008: net/minecraft/client/color/block/BlockColor.getColor");
     }
-    public static Object m0008Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0008 (static): net/minecraft/client/renderer/ItemBlockRenderTypes.method_23680");
+    public static Object m0008Static(Object argument0, Object argument1, Object argument2, Object argument3) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0008 (static): net/minecraft/client/color/block/BlockColor.getColor");
     }
     // TODO: implement m0008 and m0008Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/client/renderer/LightTexture.m_109880_()Lcom/mojang/blaze3d/textures/GpuTextureView;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.renderer.LightTexture, returns com.mojang.blaze3d.textures.GpuTextureView. */
+    /** Voxy calls net/minecraft/client/gui/Gui.method_1743()Lnet/minecraft/client/gui/components/ChatComponent;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.gui.Gui, returns net.minecraft.client.gui.components.ChatComponent. */
     public static Object m0009(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0009: net/minecraft/client/renderer/LightTexture.m_109880_");
+        throw new UnsupportedOperationException("RoxyForge bridge m0009: net/minecraft/client/gui/Gui.method_1743");
     }
     public static Object m0009Static() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0009 (static): net/minecraft/client/renderer/LightTexture.m_109880_");
+        throw new UnsupportedOperationException("RoxyForge bridge m0009 (static): net/minecraft/client/gui/Gui.method_1743");
     }
     // TODO: implement m0009 and m0009Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/client/renderer/block/BlockRenderDispatcher.m_110912_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/BlockAndTintGetter;Lcom/mojang/blaze3d/vertex/VertexConsumer;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;)V, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.renderer.block.BlockRenderDispatcher, returns void. */
-    public static Object m0010(Object self, Object argument0, Object argument1, Object argument2, Object argument3, Object argument4) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0010: net/minecraft/client/renderer/block/BlockRenderDispatcher.m_110912_");
+    /** Voxy calls net/minecraft/client/gui/components/ChatComponent.method_1812(Lnet/minecraft/network/chat/Component;)V, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.gui.components.ChatComponent, returns void. */
+    public static Object m0010(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0010: net/minecraft/client/gui/components/ChatComponent.method_1812");
     }
-    public static Object m0010Static(Object argument0, Object argument1, Object argument2, Object argument3, Object argument4) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0010 (static): net/minecraft/client/renderer/block/BlockRenderDispatcher.m_110912_");
+    public static Object m0010Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0010 (static): net/minecraft/client/gui/components/ChatComponent.method_1812");
     }
     // TODO: implement m0010 and m0010Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/client/renderer/block/model/BakedQuad.method_76648(I)Lorg/joml/Vector3fc;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.renderer.block.model.BakedQuad, returns org.joml.Vector3fc. */
-    public static Object m0011(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0011: net/minecraft/client/renderer/block/model/BakedQuad.method_76648");
+    /** Voxy calls net/minecraft/client/gui/components/LerpingBossEvent.method_5407()Ljava/util/UUID;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.gui.components.LerpingBossEvent, returns java.util.UUID. */
+    public static Object m0011(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0011: net/minecraft/client/gui/components/LerpingBossEvent.method_5407");
     }
-    public static Object m0011Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0011 (static): net/minecraft/client/renderer/block/model/BakedQuad.method_76648");
+    public static Object m0011Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0011 (static): net/minecraft/client/gui/components/LerpingBossEvent.method_5407");
     }
     // TODO: implement m0011 and m0011Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/client/renderer/block/model/BakedQuad.method_76649(I)J, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.renderer.block.model.BakedQuad, returns long. */
+    /** Voxy calls net/minecraft/client/gui/components/LerpingBossEvent.method_5408(F)V, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.gui.components.LerpingBossEvent, returns void. */
     public static Object m0012(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0012: net/minecraft/client/renderer/block/model/BakedQuad.method_76649");
+        throw new UnsupportedOperationException("RoxyForge bridge m0012: net/minecraft/client/gui/components/LerpingBossEvent.method_5408");
     }
     public static Object m0012Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0012 (static): net/minecraft/client/renderer/block/model/BakedQuad.method_76649");
+        throw new UnsupportedOperationException("RoxyForge bridge m0012 (static): net/minecraft/client/gui/components/LerpingBossEvent.method_5408");
     }
     // TODO: implement m0012 and m0012Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/client/renderer/texture/AbstractTexture.method_68004()Lcom/mojang/blaze3d/textures/GpuTexture;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.renderer.texture.AbstractTexture, returns com.mojang.blaze3d.textures.GpuTexture. */
-    public static Object m0013(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0013: net/minecraft/client/renderer/texture/AbstractTexture.method_68004");
+    /** Voxy calls net/minecraft/client/gui/components/LerpingBossEvent.method_5413(Lnet/minecraft/network/chat/Component;)V, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.gui.components.LerpingBossEvent, returns void. */
+    public static Object m0013(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0013: net/minecraft/client/gui/components/LerpingBossEvent.method_5413");
     }
-    public static Object m0013Static() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0013 (static): net/minecraft/client/renderer/texture/AbstractTexture.method_68004");
+    public static Object m0013Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0013 (static): net/minecraft/client/gui/components/LerpingBossEvent.method_5413");
     }
     // TODO: implement m0013 and m0013Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/client/renderer/texture/TextureManager.method_4619(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/client/renderer/texture/AbstractTexture;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.renderer.texture.TextureManager, returns net.minecraft.client.renderer.texture.AbstractTexture. */
+    /** Voxy calls net/minecraft/client/model/geom/ModelPart.method_68509(Lnet/minecraft/core/Direction;)Ljava/util/List;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.model.geom.ModelPart, returns java.util.List. */
     public static Object m0014(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0014: net/minecraft/client/renderer/texture/TextureManager.method_4619");
+        throw new UnsupportedOperationException("RoxyForge bridge m0014: net/minecraft/client/model/geom/ModelPart.method_68509");
     }
     public static Object m0014Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0014 (static): net/minecraft/client/renderer/texture/TextureManager.method_4619");
+        throw new UnsupportedOperationException("RoxyForge bridge m0014 (static): net/minecraft/client/model/geom/ModelPart.method_68509");
     }
     // TODO: implement m0014 and m0014Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/client/resources/model/BakedModel.method_68512(Lnet/minecraft/util/RandomSource;)Ljava/util/List;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.resources.model.BakedModel, returns java.util.List. */
+    /** Voxy calls net/minecraft/client/model/geom/builders/UVPair.method_76641(J)F, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.model.geom.builders.UVPair, returns float. */
     public static Object m0015(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0015: net/minecraft/client/resources/model/BakedModel.method_68512");
+        throw new UnsupportedOperationException("RoxyForge bridge m0015: net/minecraft/client/model/geom/builders/UVPair.method_76641");
     }
     public static Object m0015Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0015 (static): net/minecraft/client/resources/model/BakedModel.method_68512");
+        throw new UnsupportedOperationException("RoxyForge bridge m0015 (static): net/minecraft/client/model/geom/builders/UVPair.method_76641");
     }
     // TODO: implement m0015 and m0015Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/client/resources/model/ModelManager.method_4743()Lnet/minecraft/client/renderer/block/BlockModelShaper;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.resources.model.ModelManager, returns net.minecraft.client.renderer.block.BlockModelShaper. */
-    public static Object m0016(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0016: net/minecraft/client/resources/model/ModelManager.method_4743");
+    /** Voxy calls net/minecraft/client/model/geom/builders/UVPair.method_76642(J)F, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.model.geom.builders.UVPair, returns float. */
+    public static Object m0016(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0016: net/minecraft/client/model/geom/builders/UVPair.method_76642");
     }
-    public static Object m0016Static() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0016 (static): net/minecraft/client/resources/model/ModelManager.method_4743");
+    public static Object m0016Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0016 (static): net/minecraft/client/model/geom/builders/UVPair.method_76642");
     }
     // TODO: implement m0016 and m0016Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/client/server/IntegratedServer.method_27050(Lnet/minecraft/world/level/storage/LevelResource;)Ljava/nio/file/Path;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.client.server.IntegratedServer, returns java.nio.file.Path. */
+    /** Voxy calls net/minecraft/client/multiplayer/ClientChunkCache$Storage.m_104481_(I)Lnet/minecraft/world/level/chunk/LevelChunk;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.multiplayer.ClientChunkCache$Storage, returns net.minecraft.world.level.chunk.LevelChunk. */
     public static Object m0017(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0017: net/minecraft/client/server/IntegratedServer.method_27050");
+        throw new UnsupportedOperationException("RoxyForge bridge m0017: net/minecraft/client/multiplayer/ClientChunkCache$Storage.m_104481_");
     }
     public static Object m0017Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0017 (static): net/minecraft/client/server/IntegratedServer.method_27050");
+        throw new UnsupportedOperationException("RoxyForge bridge m0017 (static): net/minecraft/client/multiplayer/ClientChunkCache$Storage.m_104481_");
     }
     // TODO: implement m0017 and m0017Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/core/BlockPos.method_10260()I, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.core.BlockPos, returns int. */
-    public static Object m0018(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0018: net/minecraft/core/BlockPos.method_10260");
+    /** Voxy calls net/minecraft/client/multiplayer/ClientChunkCache.m_104448_(IILnet/minecraft/world/level/chunk/ChunkStatus;Z)Lnet/minecraft/world/level/chunk/LevelChunk;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.multiplayer.ClientChunkCache, returns net.minecraft.world.level.chunk.LevelChunk. */
+    public static Object m0018(Object self, Object argument0, Object argument1, Object argument2, Object argument3) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0018: net/minecraft/client/multiplayer/ClientChunkCache.m_104448_");
     }
-    public static Object m0018Static() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0018 (static): net/minecraft/core/BlockPos.method_10260");
+    public static Object m0018Static(Object argument0, Object argument1, Object argument2, Object argument3) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0018 (static): net/minecraft/client/multiplayer/ClientChunkCache.m_104448_");
     }
     // TODO: implement m0018 and m0018Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/core/BlockPos.method_10263()I, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.core.BlockPos, returns int. */
+    /** Voxy calls net/minecraft/client/multiplayer/ClientLevel.method_22336()Lnet/minecraft/world/level/lighting/LevelLightEngine;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.multiplayer.ClientLevel, returns net.minecraft.world.level.lighting.LevelLightEngine. */
     public static Object m0019(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0019: net/minecraft/core/BlockPos.method_10263");
+        throw new UnsupportedOperationException("RoxyForge bridge m0019: net/minecraft/client/multiplayer/ClientLevel.method_22336");
     }
     public static Object m0019Static() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0019 (static): net/minecraft/core/BlockPos.method_10263");
+        throw new UnsupportedOperationException("RoxyForge bridge m0019 (static): net/minecraft/client/multiplayer/ClientLevel.method_22336");
     }
     // TODO: implement m0019 and m0019Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/core/BlockPos.method_10264()I, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.core.BlockPos, returns int. */
-    public static Object m0020(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0020: net/minecraft/core/BlockPos.method_10264");
+    /** Voxy calls net/minecraft/client/multiplayer/ClientLevel.method_24852(Lnet/minecraft/core/Direction;Z)F, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.multiplayer.ClientLevel, returns float. */
+    public static Object m0020(Object self, Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0020: net/minecraft/client/multiplayer/ClientLevel.method_24852");
     }
-    public static Object m0020Static() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0020 (static): net/minecraft/core/BlockPos.method_10264");
+    public static Object m0020Static(Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0020 (static): net/minecraft/client/multiplayer/ClientLevel.method_24852");
     }
     // TODO: implement m0020 and m0020Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/core/DefaultedRegistry.method_10206(Ljava/lang/Object;)I, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.core.DefaultedRegistry, returns int. */
-    public static Object m0021(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0021: net/minecraft/core/DefaultedRegistry.method_10206");
+    /** Voxy calls net/minecraft/client/multiplayer/ClientLevel.method_27983()Lnet/minecraft/resources/ResourceKey;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.multiplayer.ClientLevel, returns net.minecraft.resources.ResourceKey. */
+    public static Object m0021(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0021: net/minecraft/client/multiplayer/ClientLevel.method_27983");
     }
-    public static Object m0021Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0021 (static): net/minecraft/core/DefaultedRegistry.method_10206");
+    public static Object m0021Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0021 (static): net/minecraft/client/multiplayer/ClientLevel.method_27983");
     }
     // TODO: implement m0021 and m0021Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/core/Direction.m_235666_(I)Lnet/minecraft/core/Direction;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.core.Direction, returns net.minecraft.core.Direction. */
-    public static Object m0022(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0022: net/minecraft/core/Direction.m_235666_");
+    /** Voxy calls net/minecraft/client/multiplayer/ClientLevel.method_2935()Lnet/minecraft/client/multiplayer/ClientChunkCache;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.multiplayer.ClientLevel, returns net.minecraft.client.multiplayer.ClientChunkCache. */
+    public static Object m0022(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0022: net/minecraft/client/multiplayer/ClientLevel.method_2935");
     }
-    public static Object m0022Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0022 (static): net/minecraft/core/Direction.m_235666_");
+    public static Object m0022Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0022 (static): net/minecraft/client/multiplayer/ClientLevel.method_2935");
     }
     // TODO: implement m0022 and m0022Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/core/Direction.method_62675()Lnet/minecraft/core/Vec3i;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.core.Direction, returns net.minecraft.core.Vec3i. */
+    /** Voxy calls net/minecraft/client/multiplayer/ClientLevel.method_30349()Lnet/minecraft/core/RegistryAccess;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.multiplayer.ClientLevel, returns net.minecraft.core.RegistryAccess. */
     public static Object m0023(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0023: net/minecraft/core/Direction.method_62675");
+        throw new UnsupportedOperationException("RoxyForge bridge m0023: net/minecraft/client/multiplayer/ClientLevel.method_30349");
     }
     public static Object m0023Static() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0023 (static): net/minecraft/core/Direction.method_62675");
+        throw new UnsupportedOperationException("RoxyForge bridge m0023 (static): net/minecraft/client/multiplayer/ClientLevel.method_30349");
     }
     // TODO: implement m0023 and m0023Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/core/Direction.ordinal()I, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.core.Direction, returns int. */
+    /** Voxy calls net/minecraft/client/multiplayer/ClientLevel.method_31597()I, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.multiplayer.ClientLevel, returns int. */
     public static Object m0024(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0024: net/minecraft/core/Direction.ordinal");
+        throw new UnsupportedOperationException("RoxyForge bridge m0024: net/minecraft/client/multiplayer/ClientLevel.method_31597");
     }
     public static Object m0024Static() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0024 (static): net/minecraft/core/Direction.ordinal");
+        throw new UnsupportedOperationException("RoxyForge bridge m0024 (static): net/minecraft/client/multiplayer/ClientLevel.method_31597");
     }
     // TODO: implement m0024 and m0024Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/core/Holder$Reference.comp_349()Ljava/lang/Object;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.core.Holder$Reference, returns java.lang.Object. */
+    /** Voxy calls net/minecraft/client/multiplayer/ClientLevel.method_31607()I, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.multiplayer.ClientLevel, returns int. */
     public static Object m0025(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0025: net/minecraft/core/Holder$Reference.comp_349");
+        throw new UnsupportedOperationException("RoxyForge bridge m0025: net/minecraft/client/multiplayer/ClientLevel.method_31607");
     }
     public static Object m0025Static() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0025 (static): net/minecraft/core/Holder$Reference.comp_349");
+        throw new UnsupportedOperationException("RoxyForge bridge m0025 (static): net/minecraft/client/multiplayer/ClientLevel.method_31607");
     }
     // TODO: implement m0025 and m0025Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/core/IdMapper.method_10200(I)Ljava/lang/Object;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.core.IdMapper, returns java.lang.Object. */
-    public static Object m0026(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0026: net/minecraft/core/IdMapper.method_10200");
+    /** Voxy calls net/minecraft/client/multiplayer/ClientLevel.method_32891()I, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.multiplayer.ClientLevel, returns int. */
+    public static Object m0026(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0026: net/minecraft/client/multiplayer/ClientLevel.method_32891");
     }
-    public static Object m0026Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0026 (static): net/minecraft/core/IdMapper.method_10200");
+    public static Object m0026Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0026 (static): net/minecraft/client/multiplayer/ClientLevel.method_32891");
     }
     // TODO: implement m0026 and m0026Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/core/IdMapper.method_10204()I, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.core.IdMapper, returns int. */
+    /** Voxy calls net/minecraft/client/multiplayer/ServerData.method_52811()Z, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.multiplayer.ServerData, returns boolean. */
     public static Object m0027(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0027: net/minecraft/core/IdMapper.method_10204");
+        throw new UnsupportedOperationException("RoxyForge bridge m0027: net/minecraft/client/multiplayer/ServerData.method_52811");
     }
     public static Object m0027Static() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0027 (static): net/minecraft/core/IdMapper.method_10204");
+        throw new UnsupportedOperationException("RoxyForge bridge m0027 (static): net/minecraft/client/multiplayer/ServerData.method_52811");
     }
     // TODO: implement m0027 and m0027Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/core/Registry.method_10223(Lnet/minecraft/resources/ResourceLocation;)Ljava/util/Optional;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.core.Registry, returns java.util.Optional. */
-    public static Object m0028(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0028: net/minecraft/core/Registry.method_10223");
+    /** Voxy calls net/minecraft/client/multiplayer/chat/ChatListener.m_240688_(Lnet/minecraft/network/chat/Component;Z)V, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.multiplayer.chat.ChatListener, returns void. */
+    public static Object m0028(Object self, Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0028: net/minecraft/client/multiplayer/chat/ChatListener.m_240688_");
     }
-    public static Object m0028Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0028 (static): net/minecraft/core/Registry.method_10223");
+    public static Object m0028Static(Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0028 (static): net/minecraft/client/multiplayer/chat/ChatListener.m_240688_");
     }
     // TODO: implement m0028 and m0028Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/core/Registry.method_29107(Lnet/minecraft/resources/ResourceKey;)Ljava/lang/Object;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.core.Registry, returns java.lang.Object. */
+    /** Voxy calls net/minecraft/client/renderer/GameRenderer.m_253088_(F)Lorg/joml/Matrix4f;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.renderer.GameRenderer, returns org.joml.Matrix4f. */
     public static Object m0029(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0029: net/minecraft/core/Registry.method_29107");
+        throw new UnsupportedOperationException("RoxyForge bridge m0029: net/minecraft/client/renderer/GameRenderer.m_253088_");
     }
     public static Object m0029Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0029 (static): net/minecraft/core/Registry.method_29107");
+        throw new UnsupportedOperationException("RoxyForge bridge m0029 (static): net/minecraft/client/renderer/GameRenderer.m_253088_");
     }
     // TODO: implement m0029 and m0029Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/core/Registry.method_46747(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/core/Holder$Reference;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.core.Registry, returns net.minecraft.core.Holder$Reference. */
-    public static Object m0030(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0030: net/minecraft/core/Registry.method_46747");
+    /** Voxy calls net/minecraft/client/renderer/GameRenderer.method_19418()Lnet/minecraft/client/Camera;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.renderer.GameRenderer, returns net.minecraft.client.Camera. */
+    public static Object m0030(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0030: net/minecraft/client/renderer/GameRenderer.method_19418");
     }
-    public static Object m0030Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0030 (static): net/minecraft/core/Registry.method_46747");
+    public static Object m0030Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0030 (static): net/minecraft/client/renderer/GameRenderer.method_19418");
     }
     // TODO: implement m0030 and m0030Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/core/RegistryAccess.method_30530(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/core/Registry;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.core.RegistryAccess, returns net.minecraft.core.Registry. */
-    public static Object m0031(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0031: net/minecraft/core/RegistryAccess.method_30530");
+    /** Voxy calls net/minecraft/client/renderer/GameRenderer.method_22974()Lnet/minecraft/client/renderer/LightTexture;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.renderer.GameRenderer, returns net.minecraft.client.renderer.LightTexture. */
+    public static Object m0031(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0031: net/minecraft/client/renderer/GameRenderer.method_22974");
     }
-    public static Object m0031Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0031 (static): net/minecraft/core/RegistryAccess.method_30530");
+    public static Object m0031Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0031 (static): net/minecraft/client/renderer/GameRenderer.method_22974");
     }
     // TODO: implement m0031 and m0031Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/core/SectionPos.m_123170_(Lnet/minecraft/world/level/ChunkPos;I)Lnet/minecraft/core/SectionPos;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.core.SectionPos, returns net.minecraft.core.SectionPos. */
-    public static Object m0032(Object self, Object argument0, Object argument1) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0032: net/minecraft/core/SectionPos.m_123170_");
+    /** Voxy calls net/minecraft/client/renderer/GameRenderer.method_3196(Lnet/minecraft/client/Camera;FZ)F, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.renderer.GameRenderer, returns float. */
+    public static Object m0032(Object self, Object argument0, Object argument1, Object argument2) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0032: net/minecraft/client/renderer/GameRenderer.method_3196");
     }
-    public static Object m0032Static(Object argument0, Object argument1) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0032 (static): net/minecraft/core/SectionPos.m_123170_");
+    public static Object m0032Static(Object argument0, Object argument1, Object argument2) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0032 (static): net/minecraft/client/renderer/GameRenderer.method_3196");
     }
     // TODO: implement m0032 and m0032Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/core/SectionPos.method_18687()I, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.core.SectionPos, returns int. */
-    public static Object m0033(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0033: net/minecraft/core/SectionPos.method_18687");
+    /** Voxy calls net/minecraft/client/renderer/ItemBlockRenderTypes.method_23679(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.renderer.ItemBlockRenderTypes, returns net.minecraft.client.renderer.chunk.ChunkRenderDispatcher$RenderChunk. */
+    public static Object m0033(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0033: net/minecraft/client/renderer/ItemBlockRenderTypes.method_23679");
     }
-    public static Object m0033Static() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0033 (static): net/minecraft/core/SectionPos.method_18687");
+    public static Object m0033Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0033 (static): net/minecraft/client/renderer/ItemBlockRenderTypes.method_23679");
     }
     // TODO: implement m0033 and m0033Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/nbt/CompoundTag.m_128403_(Ljava/lang/String;I)I, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.nbt.CompoundTag, returns int. */
-    public static Object m0034(Object self, Object argument0, Object argument1) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0034: net/minecraft/nbt/CompoundTag.m_128403_");
+    /** Voxy calls net/minecraft/client/renderer/ItemBlockRenderTypes.method_23680(Lnet/minecraft/world/level/material/FluidState;)Lnet/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.renderer.ItemBlockRenderTypes, returns net.minecraft.client.renderer.chunk.ChunkRenderDispatcher$RenderChunk. */
+    public static Object m0034(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0034: net/minecraft/client/renderer/ItemBlockRenderTypes.method_23680");
     }
-    public static Object m0034Static(Object argument0, Object argument1) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0034 (static): net/minecraft/nbt/CompoundTag.m_128403_");
+    public static Object m0034Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0034 (static): net/minecraft/client/renderer/ItemBlockRenderTypes.method_23680");
     }
     // TODO: implement m0034 and m0034Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/nbt/CompoundTag.m_128463_(Ljava/lang/String;)Ljava/util/Optional;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.nbt.CompoundTag, returns java.util.Optional. */
-    public static Object m0035(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0035: net/minecraft/nbt/CompoundTag.m_128463_");
+    /** Voxy calls net/minecraft/client/renderer/LightTexture.m_109880_()Lcom/mojang/blaze3d/textures/GpuTextureView;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.renderer.LightTexture, returns com.mojang.blaze3d.textures.GpuTextureView. */
+    public static Object m0035(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0035: net/minecraft/client/renderer/LightTexture.m_109880_");
     }
-    public static Object m0035Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0035 (static): net/minecraft/nbt/CompoundTag.m_128463_");
+    public static Object m0035Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0035 (static): net/minecraft/client/renderer/LightTexture.m_109880_");
     }
     // TODO: implement m0035 and m0035Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/nbt/CompoundTag.m_128469_(Ljava/lang/String;)Ljava/util/Optional;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.nbt.CompoundTag, returns java.util.Optional. */
+    /** Voxy calls net/minecraft/client/renderer/block/BlockModelShaper.method_3335(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/client/resources/model/BakedModel;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.renderer.block.BlockModelShaper, returns net.minecraft.client.resources.model.BakedModel. */
     public static Object m0036(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0036: net/minecraft/nbt/CompoundTag.m_128469_");
+        throw new UnsupportedOperationException("RoxyForge bridge m0036: net/minecraft/client/renderer/block/BlockModelShaper.method_3335");
     }
     public static Object m0036Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0036 (static): net/minecraft/nbt/CompoundTag.m_128469_");
+        throw new UnsupportedOperationException("RoxyForge bridge m0036 (static): net/minecraft/client/renderer/block/BlockModelShaper.method_3335");
     }
     // TODO: implement m0036 and m0036Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/nbt/CompoundTag.m_274048_(Ljava/lang/String;Lnet/minecraft/nbt/Tag;)Lnet/minecraft/nbt/Tag;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.nbt.CompoundTag, returns net.minecraft.nbt.Tag. */
-    public static Object m0037(Object self, Object argument0, Object argument1) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0037: net/minecraft/nbt/CompoundTag.m_274048_");
+    /** Voxy calls net/minecraft/client/renderer/block/BlockRenderDispatcher.m_110912_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/BlockAndTintGetter;Lcom/mojang/blaze3d/vertex/VertexConsumer;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;)V, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.renderer.block.BlockRenderDispatcher, returns void. */
+    public static Object m0037(Object self, Object argument0, Object argument1, Object argument2, Object argument3, Object argument4) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0037: net/minecraft/client/renderer/block/BlockRenderDispatcher.m_110912_");
     }
-    public static Object m0037Static(Object argument0, Object argument1) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0037 (static): net/minecraft/nbt/CompoundTag.m_274048_");
+    public static Object m0037Static(Object argument0, Object argument1, Object argument2, Object argument3, Object argument4) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0037 (static): net/minecraft/client/renderer/block/BlockRenderDispatcher.m_110912_");
     }
     // TODO: implement m0037 and m0037Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/nbt/CompoundTag.method_10554(Ljava/lang/String;)Ljava/util/Optional;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.nbt.CompoundTag, returns java.util.Optional. */
-    public static Object m0038(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0038: net/minecraft/nbt/CompoundTag.method_10554");
+    /** Voxy calls net/minecraft/client/renderer/block/model/BakedQuad.comp_3724()Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.renderer.block.model.BakedQuad, returns net.minecraft.client.renderer.texture.TextureAtlasSprite. */
+    public static Object m0038(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0038: net/minecraft/client/renderer/block/model/BakedQuad.comp_3724");
     }
-    public static Object m0038Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0038 (static): net/minecraft/nbt/CompoundTag.method_10554");
+    public static Object m0038Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0038 (static): net/minecraft/client/renderer/block/model/BakedQuad.comp_3724");
     }
     // TODO: implement m0038 and m0038Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/nbt/ListTag.iterator()Ljava/util/Iterator;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.nbt.ListTag, returns java.util.Iterator. */
+    /** Voxy calls net/minecraft/client/renderer/block/model/BakedQuad.comp_3725()Z, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.renderer.block.model.BakedQuad, returns boolean. */
     public static Object m0039(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0039: net/minecraft/nbt/ListTag.iterator");
+        throw new UnsupportedOperationException("RoxyForge bridge m0039: net/minecraft/client/renderer/block/model/BakedQuad.comp_3725");
     }
     public static Object m0039Static() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0039 (static): net/minecraft/nbt/ListTag.iterator");
+        throw new UnsupportedOperationException("RoxyForge bridge m0039 (static): net/minecraft/client/renderer/block/model/BakedQuad.comp_3725");
     }
     // TODO: implement m0039 and m0039Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/nbt/NbtAccounter.method_53898()Lnet/minecraft/nbt/NbtAccounter;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.nbt.NbtAccounter, returns net.minecraft.nbt.NbtAccounter. */
+    /** Voxy calls net/minecraft/client/renderer/block/model/BakedQuad.method_3360()Z, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.client.renderer.block.model.BakedQuad, returns boolean. */
     public static Object m0040(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0040: net/minecraft/nbt/NbtAccounter.method_53898");
+        throw new UnsupportedOperationException("RoxyForge bridge m0040: net/minecraft/client/renderer/block/model/BakedQuad.method_3360");
     }
     public static Object m0040Static() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0040 (static): net/minecraft/nbt/NbtAccounter.method_53898");
+        throw new UnsupportedOperationException("RoxyForge bridge m0040 (static): net/minecraft/client/renderer/block/model/BakedQuad.method_3360");
     }
     // TODO: implement m0040 and m0040Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/network/chat/Component.m_130668_(Ljava/lang/String;)Lnet/minecraft/network/chat/Component;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.network.chat.Component, returns net.minecraft.network.chat.Component. */
+    /** Voxy calls net/minecraft/core/Direction.m_235666_(I)Lnet/minecraft/core/Direction;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.core.Direction, returns net.minecraft.core.Direction. */
     public static Object m0041(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0041: net/minecraft/network/chat/Component.m_130668_");
+        throw new UnsupportedOperationException("RoxyForge bridge m0041: net/minecraft/core/Direction.m_235666_");
     }
     public static Object m0041Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0041 (static): net/minecraft/network/chat/Component.m_130668_");
+        throw new UnsupportedOperationException("RoxyForge bridge m0041 (static): net/minecraft/core/Direction.m_235666_");
     }
     // TODO: implement m0041 and m0041Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/network/chat/Component.m_237099_(Ljava/lang/String;)Lnet/minecraft/network/chat/MutableComponent;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.network.chat.Component, returns net.minecraft.network.chat.MutableComponent. */
-    public static Object m0042(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0042: net/minecraft/network/chat/Component.m_237099_");
+    /** Voxy calls net/minecraft/core/SectionPos.m_123170_(Lnet/minecraft/world/level/ChunkPos;I)Lnet/minecraft/core/SectionPos;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.core.SectionPos, returns net.minecraft.core.SectionPos. */
+    public static Object m0042(Object self, Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0042: net/minecraft/core/SectionPos.m_123170_");
     }
-    public static Object m0042Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0042 (static): net/minecraft/network/chat/Component.m_237099_");
+    public static Object m0042Static(Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0042 (static): net/minecraft/core/SectionPos.m_123170_");
     }
     // TODO: implement m0042 and m0042Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/resources/ResourceLocation.method_60654(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.resources.ResourceLocation, returns net.minecraft.resources.ResourceLocation. */
-    public static Object m0043(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0043: net/minecraft/resources/ResourceLocation.method_60654");
+    /** Voxy calls net/minecraft/nbt/CompoundTag.m_128403_(Ljava/lang/String;I)I, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.nbt.CompoundTag, returns int. */
+    public static Object m0043(Object self, Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0043: net/minecraft/nbt/CompoundTag.m_128403_");
     }
-    public static Object m0043Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0043 (static): net/minecraft/resources/ResourceLocation.method_60654");
+    public static Object m0043Static(Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0043 (static): net/minecraft/nbt/CompoundTag.m_128403_");
     }
     // TODO: implement m0043 and m0043Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/world/level/block/Block.m_49965_()Lnet/minecraft/world/level/block/state/BlockState;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.world.level.block.Block, returns net.minecraft.world.level.block.state.BlockState. */
-    public static Object m0044(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0044: net/minecraft/world/level/block/Block.m_49965_");
+    /** Voxy calls net/minecraft/nbt/CompoundTag.m_128463_(Ljava/lang/String;)Ljava/util/Optional;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.nbt.CompoundTag, returns java.util.Optional. */
+    public static Object m0044(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0044: net/minecraft/nbt/CompoundTag.m_128463_");
     }
-    public static Object m0044Static() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0044 (static): net/minecraft/world/level/block/Block.m_49965_");
+    public static Object m0044Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0044 (static): net/minecraft/nbt/CompoundTag.m_128463_");
     }
     // TODO: implement m0044 and m0044Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/world/level/chunk/DataLayer.m_156341_()Lnet/minecraft/world/level/chunk/DataLayer;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.world.level.chunk.DataLayer, returns net.minecraft.world.level.chunk.DataLayer. */
-    public static Object m0045(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0045: net/minecraft/world/level/chunk/DataLayer.m_156341_");
+    /** Voxy calls net/minecraft/nbt/CompoundTag.m_128469_(Ljava/lang/String;)Ljava/util/Optional;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.nbt.CompoundTag, returns java.util.Optional. */
+    public static Object m0045(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0045: net/minecraft/nbt/CompoundTag.m_128469_");
     }
-    public static Object m0045Static() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0045 (static): net/minecraft/world/level/chunk/DataLayer.m_156341_");
+    public static Object m0045Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0045 (static): net/minecraft/nbt/CompoundTag.m_128469_");
     }
     // TODO: implement m0045 and m0045Static against the 1.20.1 API
-    /** Voxy calls net/minecraft/world/level/chunk/storage/RegionFileVersion.m_63755_(I)Lnet/minecraft/world/level/chunk/storage/RegionFileVersion;, which 1.20.1 does not have.
-     *  Owner type: net.minecraft.world.level.chunk.storage.RegionFileVersion, returns net.minecraft.world.level.chunk.storage.RegionFileVersion. */
-    public static Object m0046(Object self, Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0046: net/minecraft/world/level/chunk/storage/RegionFileVersion.m_63755_");
+    /** Voxy calls net/minecraft/nbt/CompoundTag.m_274048_(Ljava/lang/String;Lnet/minecraft/nbt/Tag;)Lnet/minecraft/nbt/Tag;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.nbt.CompoundTag, returns net.minecraft.nbt.Tag. */
+    public static Object m0046(Object self, Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0046: net/minecraft/nbt/CompoundTag.m_274048_");
     }
-    public static Object m0046Static(Object argument0) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0046 (static): net/minecraft/world/level/chunk/storage/RegionFileVersion.m_63755_");
+    public static Object m0046Static(Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0046 (static): net/minecraft/nbt/CompoundTag.m_274048_");
     }
     // TODO: implement m0046 and m0046Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/nbt/NbtIo.method_10627(Ljava/io/DataInput;)Lnet/minecraft/nbt/CompoundTag;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.nbt.NbtIo, returns net.minecraft.nbt.CompoundTag. */
+    public static Object m0047(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0047: net/minecraft/nbt/NbtIo.method_10627");
+    }
+    public static Object m0047Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0047 (static): net/minecraft/nbt/NbtIo.method_10627");
+    }
+    // TODO: implement m0047 and m0047Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/nbt/NbtIo.method_10629(Ljava/io/InputStream;Lnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/CompoundTag;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.nbt.NbtIo, returns net.minecraft.nbt.CompoundTag. */
+    public static Object m0048(Object self, Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0048: net/minecraft/nbt/NbtIo.method_10629");
+    }
+    public static Object m0048Static(Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0048 (static): net/minecraft/nbt/NbtIo.method_10629");
+    }
+    // TODO: implement m0048 and m0048Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/nbt/NbtIo.method_10634(Lnet/minecraft/nbt/CompoundTag;Ljava/io/OutputStream;)V, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.nbt.NbtIo, returns void. */
+    public static Object m0049(Object self, Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0049: net/minecraft/nbt/NbtIo.method_10634");
+    }
+    public static Object m0049Static(Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0049 (static): net/minecraft/nbt/NbtIo.method_10634");
+    }
+    // TODO: implement m0049 and m0049Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/network/chat/Component.m_130668_(Ljava/lang/String;)Lnet/minecraft/network/chat/Component;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.network.chat.Component, returns net.minecraft.network.chat.Component. */
+    public static Object m0050(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0050: net/minecraft/network/chat/Component.m_130668_");
+    }
+    public static Object m0050Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0050 (static): net/minecraft/network/chat/Component.m_130668_");
+    }
+    // TODO: implement m0050 and m0050Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/network/chat/Component.m_237099_(Ljava/lang/String;)Lnet/minecraft/network/chat/MutableComponent;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.network.chat.Component, returns net.minecraft.network.chat.MutableComponent. */
+    public static Object m0051(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0051: net/minecraft/network/chat/Component.m_237099_");
+    }
+    public static Object m0051Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0051 (static): net/minecraft/network/chat/Component.m_237099_");
+    }
+    // TODO: implement m0051 and m0051Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/network/chat/Component.method_43471(Ljava/lang/String;)Lnet/minecraft/network/chat/MutableComponent;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.network.chat.Component, returns net.minecraft.network.chat.MutableComponent. */
+    public static Object m0052(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0052: net/minecraft/network/chat/Component.method_43471");
+    }
+    public static Object m0052Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0052 (static): net/minecraft/network/chat/Component.method_43471");
+    }
+    // TODO: implement m0052 and m0052Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/resources/ResourceKey.method_29177()Lnet/minecraft/resources/ResourceLocation;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.resources.ResourceKey, returns net.minecraft.resources.ResourceLocation. */
+    public static Object m0053(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0053: net/minecraft/resources/ResourceKey.method_29177");
+    }
+    public static Object m0053Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0053 (static): net/minecraft/resources/ResourceKey.method_29177");
+    }
+    // TODO: implement m0053 and m0053Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/resources/ResourceKey.method_29179(Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/resources/ResourceKey;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.resources.ResourceKey, returns net.minecraft.resources.ResourceKey. */
+    public static Object m0054(Object self, Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0054: net/minecraft/resources/ResourceKey.method_29179");
+    }
+    public static Object m0054Static(Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0054 (static): net/minecraft/resources/ResourceKey.method_29179");
+    }
+    // TODO: implement m0054 and m0054Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/resources/ResourceKey.method_41185()Lnet/minecraft/resources/ResourceLocation;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.resources.ResourceKey, returns net.minecraft.resources.ResourceLocation. */
+    public static Object m0055(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0055: net/minecraft/resources/ResourceKey.method_41185");
+    }
+    public static Object m0055Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0055 (static): net/minecraft/resources/ResourceKey.method_41185");
+    }
+    // TODO: implement m0055 and m0055Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/resources/ResourceLocation.method_60654(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.resources.ResourceLocation, returns net.minecraft.resources.ResourceLocation. */
+    public static Object m0056(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0056: net/minecraft/resources/ResourceLocation.method_60654");
+    }
+    public static Object m0056Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0056 (static): net/minecraft/resources/ResourceLocation.method_60654");
+    }
+    // TODO: implement m0056 and m0056Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/resources/ResourceLocation.method_60655(Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.resources.ResourceLocation, returns net.minecraft.resources.ResourceLocation. */
+    public static Object m0057(Object self, Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0057: net/minecraft/resources/ResourceLocation.method_60655");
+    }
+    public static Object m0057Static(Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0057 (static): net/minecraft/resources/ResourceLocation.method_60655");
+    }
+    // TODO: implement m0057 and m0057Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/util/SimpleBitStorage.method_15212()[J, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.util.SimpleBitStorage, returns long[]. */
+    public static Object m0058(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0058: net/minecraft/util/SimpleBitStorage.method_15212");
+    }
+    public static Object m0058Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0058 (static): net/minecraft/util/SimpleBitStorage.method_15212");
+    }
+    // TODO: implement m0058 and m0058Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/util/SimpleBitStorage.method_34896()I, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.util.SimpleBitStorage, returns int. */
+    public static Object m0059(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0059: net/minecraft/util/SimpleBitStorage.method_34896");
+    }
+    public static Object m0059Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0059 (static): net/minecraft/util/SimpleBitStorage.method_34896");
+    }
+    // TODO: implement m0059 and m0059Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/ChunkPos.method_8331(II)J, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.ChunkPos, returns long. */
+    public static Object m0060(Object self, Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0060: net/minecraft/world/level/ChunkPos.method_8331");
+    }
+    public static Object m0060Static(Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0060 (static): net/minecraft/world/level/ChunkPos.method_8331");
+    }
+    // TODO: implement m0060 and m0060Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/ColorResolver.getColor(Lnet/minecraft/world/level/biome/Biome;DD)I, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.ColorResolver, returns int. */
+    public static Object m0061(Object self, Object argument0, Object argument1, Object argument2) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0061: net/minecraft/world/level/ColorResolver.getColor");
+    }
+    public static Object m0061Static(Object argument0, Object argument1, Object argument2) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0061 (static): net/minecraft/world/level/ColorResolver.getColor");
+    }
+    // TODO: implement m0061 and m0061Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/Level.method_22336()Lnet/minecraft/world/level/lighting/LevelLightEngine;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.Level, returns net.minecraft.world.level.lighting.LevelLightEngine. */
+    public static Object m0062(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0062: net/minecraft/world/level/Level.method_22336");
+    }
+    public static Object m0062Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0062 (static): net/minecraft/world/level/Level.method_22336");
+    }
+    // TODO: implement m0062 and m0062Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/Level.method_30349()Lnet/minecraft/core/RegistryAccess;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.Level, returns net.minecraft.core.RegistryAccess. */
+    public static Object m0063(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0063: net/minecraft/world/level/Level.method_30349");
+    }
+    public static Object m0063Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0063 (static): net/minecraft/world/level/Level.method_30349");
+    }
+    // TODO: implement m0063 and m0063Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/Level.method_31605()I, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.Level, returns int. */
+    public static Object m0064(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0064: net/minecraft/world/level/Level.method_31605");
+    }
+    public static Object m0064Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0064 (static): net/minecraft/world/level/Level.method_31605");
+    }
+    // TODO: implement m0064 and m0064Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/Level.method_31607()I, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.Level, returns int. */
+    public static Object m0065(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0065: net/minecraft/world/level/Level.method_31607");
+    }
+    public static Object m0065Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0065 (static): net/minecraft/world/level/Level.method_31607");
+    }
+    // TODO: implement m0065 and m0065Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/Level.method_8402(IILnet/minecraft/world/level/chunk/ChunkStatus;Z)Lnet/minecraft/world/level/chunk/ChunkAccess;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.Level, returns net.minecraft.world.level.chunk.ChunkAccess. */
+    public static Object m0066(Object self, Object argument0, Object argument1, Object argument2, Object argument3) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0066: net/minecraft/world/level/Level.method_8402");
+    }
+    public static Object m0066Static(Object argument0, Object argument1, Object argument2, Object argument3) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0066 (static): net/minecraft/world/level/Level.method_8402");
+    }
+    // TODO: implement m0066 and m0066Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/block/Block.m_49965_(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/state/BlockState;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.block.Block, returns net.minecraft.world.level.block.state.BlockState. */
+    public static Object m0067(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0067: net/minecraft/world/level/block/Block.m_49965_");
+    }
+    public static Object m0067Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0067 (static): net/minecraft/world/level/block/Block.m_49965_");
+    }
+    // TODO: implement m0067 and m0067Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/block/Block.method_9595()Lnet/minecraft/world/level/block/state/StateDefinition;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.block.Block, returns net.minecraft.world.level.block.state.StateDefinition. */
+    public static Object m0068(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0068: net/minecraft/world/level/block/Block.method_9595");
+    }
+    public static Object m0068Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0068 (static): net/minecraft/world/level/block/Block.method_9595");
+    }
+    // TODO: implement m0068 and m0068Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/block/state/BlockState.method_11654(Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/lang/Comparable;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.block.state.BlockState, returns java.lang.Comparable. */
+    public static Object m0069(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0069: net/minecraft/world/level/block/state/BlockState.method_11654");
+    }
+    public static Object m0069Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0069 (static): net/minecraft/world/level/block/state/BlockState.method_11654");
+    }
+    // TODO: implement m0069 and m0069Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/block/state/BlockState.method_26187(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;)Z, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.block.state.BlockState, returns boolean. */
+    public static Object m0070(Object self, Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0070: net/minecraft/world/level/block/state/BlockState.method_26187");
+    }
+    public static Object m0070Static(Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0070 (static): net/minecraft/world/level/block/state/BlockState.method_26187");
+    }
+    // TODO: implement m0070 and m0070Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/block/state/BlockState.method_26193()I, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.block.state.BlockState, returns int. */
+    public static Object m0071(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0071: net/minecraft/world/level/block/state/BlockState.method_26193");
+    }
+    public static Object m0071Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0071 (static): net/minecraft/world/level/block/state/BlockState.method_26193");
+    }
+    // TODO: implement m0071 and m0071Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/block/state/BlockState.method_26204()Lnet/minecraft/world/level/block/Block;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.block.state.BlockState, returns net.minecraft.world.level.block.Block. */
+    public static Object m0072(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0072: net/minecraft/world/level/block/state/BlockState.method_26204");
+    }
+    public static Object m0072Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0072 (static): net/minecraft/world/level/block/state/BlockState.method_26204");
+    }
+    // TODO: implement m0072 and m0072Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/block/state/BlockState.method_26208(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Z, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.block.state.BlockState, returns boolean. */
+    public static Object m0073(Object self, Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0073: net/minecraft/world/level/block/state/BlockState.method_26208");
+    }
+    public static Object m0073Static(Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0073 (static): net/minecraft/world/level/block/state/BlockState.method_26208");
+    }
+    // TODO: implement m0073 and m0073Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/block/state/BlockState.method_26213()I, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.block.state.BlockState, returns int. */
+    public static Object m0074(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0074: net/minecraft/world/level/block/state/BlockState.method_26213");
+    }
+    public static Object m0074Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0074 (static): net/minecraft/world/level/block/state/BlockState.method_26213");
+    }
+    // TODO: implement m0074 and m0074Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/block/state/BlockState.method_26215()Z, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.block.state.BlockState, returns boolean. */
+    public static Object m0075(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0075: net/minecraft/world/level/block/state/BlockState.method_26215");
+    }
+    public static Object m0075Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0075 (static): net/minecraft/world/level/block/state/BlockState.method_26215");
+    }
+    // TODO: implement m0075 and m0075Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/block/state/BlockState.method_26217()Lnet/minecraft/world/level/block/RenderShape;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.block.state.BlockState, returns net.minecraft.world.level.block.RenderShape. */
+    public static Object m0076(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0076: net/minecraft/world/level/block/state/BlockState.method_26217");
+    }
+    public static Object m0076Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0076 (static): net/minecraft/world/level/block/state/BlockState.method_26217");
+    }
+    // TODO: implement m0076 and m0076Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/block/state/BlockState.method_26227()Lnet/minecraft/world/level/material/FluidState;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.block.state.BlockState, returns net.minecraft.world.level.material.FluidState. */
+    public static Object m0077(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0077: net/minecraft/world/level/block/state/BlockState.method_26227");
+    }
+    public static Object m0077Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0077 (static): net/minecraft/world/level/block/state/BlockState.method_26227");
+    }
+    // TODO: implement m0077 and m0077Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/block/state/BlockState.method_28498(Lnet/minecraft/world/level/block/state/properties/Property;)Z, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.block.state.BlockState, returns boolean. */
+    public static Object m0078(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0078: net/minecraft/world/level/block/state/BlockState.method_28498");
+    }
+    public static Object m0078Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0078 (static): net/minecraft/world/level/block/state/BlockState.method_28498");
+    }
+    // TODO: implement m0078 and m0078Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/block/state/BlockState.method_28501()Ljava/util/Collection;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.block.state.BlockState, returns java.util.Collection. */
+    public static Object m0079(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0079: net/minecraft/world/level/block/state/BlockState.method_28501");
+    }
+    public static Object m0079Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0079 (static): net/minecraft/world/level/block/state/BlockState.method_28501");
+    }
+    // TODO: implement m0079 and m0079Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/block/state/BlockState.method_31709()Z, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.block.state.BlockState, returns boolean. */
+    public static Object m0080(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0080: net/minecraft/world/level/block/state/BlockState.method_31709");
+    }
+    public static Object m0080Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0080 (static): net/minecraft/world/level/block/state/BlockState.method_31709");
+    }
+    // TODO: implement m0080 and m0080Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/chunk/ChunkAccess.method_38259(I)Lnet/minecraft/world/level/chunk/LevelChunkSection;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.chunk.ChunkAccess, returns net.minecraft.world.level.chunk.LevelChunkSection. */
+    public static Object m0081(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0081: net/minecraft/world/level/chunk/ChunkAccess.method_38259");
+    }
+    public static Object m0081Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0081 (static): net/minecraft/world/level/chunk/ChunkAccess.method_38259");
+    }
+    // TODO: implement m0081 and m0081Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/chunk/ChunkStatus.method_12168(Ljava/lang/String;)Lnet/minecraft/world/level/chunk/ChunkStatus;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.chunk.ChunkStatus, returns net.minecraft.world.level.chunk.ChunkStatus. */
+    public static Object m0082(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0082: net/minecraft/world/level/chunk/ChunkStatus.method_12168");
+    }
+    public static Object m0082Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0082 (static): net/minecraft/world/level/chunk/ChunkStatus.method_12168");
+    }
+    // TODO: implement m0082 and m0082Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/chunk/DataLayer.m_156341_()Lnet/minecraft/world/level/chunk/DataLayer;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.chunk.DataLayer, returns net.minecraft.world.level.chunk.DataLayer. */
+    public static Object m0083(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0083: net/minecraft/world/level/chunk/DataLayer.m_156341_");
+    }
+    public static Object m0083Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0083 (static): net/minecraft/world/level/chunk/DataLayer.m_156341_");
+    }
+    // TODO: implement m0083 and m0083Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/chunk/GlobalPalette.method_12197()I, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.chunk.GlobalPalette, returns int. */
+    public static Object m0084(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0084: net/minecraft/world/level/chunk/GlobalPalette.method_12197");
+    }
+    public static Object m0084Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0084 (static): net/minecraft/world/level/chunk/GlobalPalette.method_12197");
+    }
+    // TODO: implement m0084 and m0084Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/chunk/GlobalPalette.method_12288(I)Ljava/lang/Object;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.chunk.GlobalPalette, returns java.lang.Object. */
+    public static Object m0085(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0085: net/minecraft/world/level/chunk/GlobalPalette.method_12288");
+    }
+    public static Object m0085Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0085 (static): net/minecraft/world/level/chunk/GlobalPalette.method_12288");
+    }
+    // TODO: implement m0085 and m0085Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/chunk/LevelChunk.method_12004()Lnet/minecraft/world/level/ChunkPos;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.chunk.LevelChunk, returns net.minecraft.world.level.ChunkPos. */
+    public static Object m0086(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0086: net/minecraft/world/level/chunk/LevelChunk.method_12004");
+    }
+    public static Object m0086Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0086 (static): net/minecraft/world/level/chunk/LevelChunk.method_12004");
+    }
+    // TODO: implement m0086 and m0086Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/chunk/LevelChunk.method_12006()[Lnet/minecraft/world/level/chunk/LevelChunkSection;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.chunk.LevelChunk, returns net.minecraft.world.level.chunk.LevelChunkSection[]. */
+    public static Object m0087(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0087: net/minecraft/world/level/chunk/LevelChunk.method_12006");
+    }
+    public static Object m0087Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0087 (static): net/minecraft/world/level/chunk/LevelChunk.method_12006");
+    }
+    // TODO: implement m0087 and m0087Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/chunk/LevelChunk.method_32891()I, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.chunk.LevelChunk, returns int. */
+    public static Object m0088(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0088: net/minecraft/world/level/chunk/LevelChunk.method_32891");
+    }
+    public static Object m0088Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0088 (static): net/minecraft/world/level/chunk/LevelChunk.method_32891");
+    }
+    // TODO: implement m0088 and m0088Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/chunk/LevelChunk.method_38259(I)Lnet/minecraft/world/level/chunk/LevelChunkSection;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.chunk.LevelChunk, returns net.minecraft.world.level.chunk.LevelChunkSection. */
+    public static Object m0089(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0089: net/minecraft/world/level/chunk/LevelChunk.method_38259");
+    }
+    public static Object m0089Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0089 (static): net/minecraft/world/level/chunk/LevelChunk.method_38259");
+    }
+    // TODO: implement m0089 and m0089Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/chunk/LevelChunkSection.method_38292()Z, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.chunk.LevelChunkSection, returns boolean. */
+    public static Object m0090(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0090: net/minecraft/world/level/chunk/LevelChunkSection.method_38292");
+    }
+    public static Object m0090Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0090 (static): net/minecraft/world/level/chunk/LevelChunkSection.method_38292");
+    }
+    // TODO: implement m0090 and m0090Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/chunk/storage/RegionFileVersion.m_63755_(I)Lnet/minecraft/world/level/chunk/storage/RegionFileVersion;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.chunk.storage.RegionFileVersion, returns net.minecraft.world.level.chunk.storage.RegionFileVersion. */
+    public static Object m0091(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0091: net/minecraft/world/level/chunk/storage/RegionFileVersion.m_63755_");
+    }
+    public static Object m0091Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0091 (static): net/minecraft/world/level/chunk/storage/RegionFileVersion.m_63755_");
+    }
+    // TODO: implement m0091 and m0091Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/dimension/DimensionType.method_12488(Lnet/minecraft/resources/ResourceKey;Ljava/nio/file/Path;)Ljava/nio/file/Path;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.dimension.DimensionType, returns java.nio.file.Path. */
+    public static Object m0092(Object self, Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0092: net/minecraft/world/level/dimension/DimensionType.method_12488");
+    }
+    public static Object m0092Static(Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0092 (static): net/minecraft/world/level/dimension/DimensionType.method_12488");
+    }
+    // TODO: implement m0092 and m0092Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/lighting/LevelLightEngine.method_15562(Lnet/minecraft/world/level/LightLayer;)Lnet/minecraft/world/level/lighting/LayerLightEventListener;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.lighting.LevelLightEngine, returns net.minecraft.world.level.lighting.LayerLightEventListener. */
+    public static Object m0093(Object self, Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0093: net/minecraft/world/level/lighting/LevelLightEngine.method_15562");
+    }
+    public static Object m0093Static(Object argument0) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0093 (static): net/minecraft/world/level/lighting/LevelLightEngine.method_15562");
+    }
+    // TODO: implement m0093 and m0093Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/lighting/LevelLightEngine.method_51560(Lnet/minecraft/world/level/LightLayer;Lnet/minecraft/core/SectionPos;)Lnet/minecraft/world/level/lighting/LayerLightSectionStorage$SectionType;, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.lighting.LevelLightEngine, returns net.minecraft.world.level.lighting.LayerLightSectionStorage$SectionType. */
+    public static Object m0094(Object self, Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0094: net/minecraft/world/level/lighting/LevelLightEngine.method_51560");
+    }
+    public static Object m0094Static(Object argument0, Object argument1) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0094 (static): net/minecraft/world/level/lighting/LevelLightEngine.method_51560");
+    }
+    // TODO: implement m0094 and m0094Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/material/FluidState.method_15769()Z, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.material.FluidState, returns boolean. */
+    public static Object m0095(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0095: net/minecraft/world/level/material/FluidState.method_15769");
+    }
+    public static Object m0095Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0095 (static): net/minecraft/world/level/material/FluidState.method_15769");
+    }
+    // TODO: implement m0095 and m0095Static against the 1.20.1 API
+    /** Voxy calls net/minecraft/world/level/storage/DataVersion.comp_4038()I, which 1.20.1 does not have.
+     *  Owner type: net.minecraft.world.level.storage.DataVersion, returns int. */
+    public static Object m0096(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0096: net/minecraft/world/level/storage/DataVersion.comp_4038");
+    }
+    public static Object m0096Static() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0096 (static): net/minecraft/world/level/storage/DataVersion.comp_4038");
+    }
+    // TODO: implement m0096 and m0096Static against the 1.20.1 API
+    /** Voxy reads net/minecraft/ChatFormatting.field_1077 (Lnet/minecraft/ChatFormatting;), which 1.20.1 does not have.
+     *  Type: net.minecraft.ChatFormatting. */
+    public static Object m0097(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0097: net/minecraft/ChatFormatting.field_1077");
+    }
+    public static void m0097Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0097 (set): net/minecraft/ChatFormatting.field_1077");
+    }
+    public static Object m0097StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0097 (static get): net/minecraft/ChatFormatting.field_1077");
+    }
+    public static void m0097StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0097 (static set): net/minecraft/ChatFormatting.field_1077");
+    }
+    // TODO: implement the m0097 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/Minecraft.field_1687 (Lnet/minecraft/client/multiplayer/ClientLevel;), which 1.20.1 does not have.
+     *  Type: net.minecraft.client.multiplayer.ClientLevel. */
+    public static Object m0098(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0098: net/minecraft/client/Minecraft.field_1687");
+    }
+    public static void m0098Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0098 (set): net/minecraft/client/Minecraft.field_1687");
+    }
+    public static Object m0098StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0098 (static get): net/minecraft/client/Minecraft.field_1687");
+    }
+    public static void m0098StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0098 (static set): net/minecraft/client/Minecraft.field_1687");
+    }
+    // TODO: implement the m0098 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/Minecraft.field_1690 (Lnet/minecraft/client/Options;), which 1.20.1 does not have.
+     *  Type: net.minecraft.client.Options. */
+    public static Object m0099(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0099: net/minecraft/client/Minecraft.field_1690");
+    }
+    public static void m0099Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0099 (set): net/minecraft/client/Minecraft.field_1690");
+    }
+    public static Object m0099StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0099 (static get): net/minecraft/client/Minecraft.field_1690");
+    }
+    public static void m0099StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0099 (static set): net/minecraft/client/Minecraft.field_1690");
+    }
+    // TODO: implement the m0099 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/Minecraft.field_1697 (Ljava/io/File;), which 1.20.1 does not have.
+     *  Type: java.io.File. */
+    public static Object m0100(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0100: net/minecraft/client/Minecraft.field_1697");
+    }
+    public static void m0100Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0100 (set): net/minecraft/client/Minecraft.field_1697");
+    }
+    public static Object m0100StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0100 (static get): net/minecraft/client/Minecraft.field_1697");
+    }
+    public static void m0100StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0100 (static set): net/minecraft/client/Minecraft.field_1697");
+    }
+    // TODO: implement the m0100 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/Minecraft.field_1705 (Lnet/minecraft/client/gui/Gui;), which 1.20.1 does not have.
+     *  Type: net.minecraft.client.gui.Gui. */
+    public static Object m0101(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0101: net/minecraft/client/Minecraft.field_1705");
+    }
+    public static void m0101Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0101 (set): net/minecraft/client/Minecraft.field_1705");
+    }
+    public static Object m0101StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0101 (static get): net/minecraft/client/Minecraft.field_1705");
+    }
+    public static void m0101StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0101 (static set): net/minecraft/client/Minecraft.field_1705");
+    }
+    // TODO: implement the m0101 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/Minecraft.field_1724 (Lnet/minecraft/client/player/LocalPlayer;), which 1.20.1 does not have.
+     *  Type: net.minecraft.client.player.LocalPlayer. */
+    public static Object m0102(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0102: net/minecraft/client/Minecraft.field_1724");
+    }
+    public static void m0102Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0102 (set): net/minecraft/client/Minecraft.field_1724");
+    }
+    public static Object m0102StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0102 (static get): net/minecraft/client/Minecraft.field_1724");
+    }
+    public static void m0102StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0102 (static set): net/minecraft/client/Minecraft.field_1724");
+    }
+    // TODO: implement the m0102 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/Minecraft.field_1761 (Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;), which 1.20.1 does not have.
+     *  Type: net.minecraft.client.multiplayer.MultiPlayerGameMode. */
+    public static Object m0103(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0103: net/minecraft/client/Minecraft.field_1761");
+    }
+    public static void m0103Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0103 (set): net/minecraft/client/Minecraft.field_1761");
+    }
+    public static Object m0103StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0103 (static get): net/minecraft/client/Minecraft.field_1761");
+    }
+    public static void m0103StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0103 (static set): net/minecraft/client/Minecraft.field_1761");
+    }
+    // TODO: implement the m0103 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/Minecraft.field_1769 (Lnet/minecraft/client/renderer/LevelRenderer;), which 1.20.1 does not have.
+     *  Type: net.minecraft.client.renderer.LevelRenderer. */
+    public static Object m0104(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0104: net/minecraft/client/Minecraft.field_1769");
+    }
+    public static void m0104Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0104 (set): net/minecraft/client/Minecraft.field_1769");
+    }
+    public static Object m0104StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0104 (static get): net/minecraft/client/Minecraft.field_1769");
+    }
+    public static void m0104StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0104 (static set): net/minecraft/client/Minecraft.field_1769");
+    }
+    // TODO: implement the m0104 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/Minecraft.field_1773 (Lnet/minecraft/client/renderer/GameRenderer;), which 1.20.1 does not have.
+     *  Type: net.minecraft.client.renderer.GameRenderer. */
+    public static Object m0105(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0105: net/minecraft/client/Minecraft.field_1773");
+    }
+    public static void m0105Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0105 (set): net/minecraft/client/Minecraft.field_1773");
+    }
+    public static Object m0105StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0105 (static get): net/minecraft/client/Minecraft.field_1773");
+    }
+    public static void m0105StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0105 (static set): net/minecraft/client/Minecraft.field_1773");
+    }
+    // TODO: implement the m0105 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/color/block/BlockColors.field_1995 (Lnet/minecraft/core/IdMapper;), which 1.20.1 does not have.
+     *  Type: net.minecraft.core.IdMapper. */
+    public static Object m0106(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0106: net/minecraft/client/color/block/BlockColors.field_1995");
+    }
+    public static void m0106Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0106 (set): net/minecraft/client/color/block/BlockColors.field_1995");
+    }
+    public static Object m0106StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0106 (static get): net/minecraft/client/color/block/BlockColors.field_1995");
+    }
+    public static void m0106StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0106 (static set): net/minecraft/client/color/block/BlockColors.field_1995");
+    }
+    // TODO: implement the m0106 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/multiplayer/ClientLevel.field_17780 (Lnet/minecraft/client/renderer/LevelRenderer;), which 1.20.1 does not have.
+     *  Type: net.minecraft.client.renderer.LevelRenderer. */
+    public static Object m0107(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0107: net/minecraft/client/multiplayer/ClientLevel.field_17780");
+    }
+    public static void m0107Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0107 (set): net/minecraft/client/multiplayer/ClientLevel.field_17780");
+    }
+    public static Object m0107StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0107 (static get): net/minecraft/client/multiplayer/ClientLevel.field_17780");
+    }
+    public static void m0107StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0107 (static set): net/minecraft/client/multiplayer/ClientLevel.field_17780");
+    }
+    // TODO: implement the m0107 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/multiplayer/MultiPlayerGameMode.field_3720 (Lnet/minecraft/client/multiplayer/ClientPacketListener;), which 1.20.1 does not have.
+     *  Type: net.minecraft.client.multiplayer.ClientPacketListener. */
+    public static Object m0108(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0108: net/minecraft/client/multiplayer/MultiPlayerGameMode.field_3720");
+    }
+    public static void m0108Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0108 (set): net/minecraft/client/multiplayer/MultiPlayerGameMode.field_3720");
+    }
+    public static Object m0108StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0108 (static get): net/minecraft/client/multiplayer/MultiPlayerGameMode.field_3720");
+    }
+    public static void m0108StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0108 (static set): net/minecraft/client/multiplayer/MultiPlayerGameMode.field_3720");
+    }
+    // TODO: implement the m0108 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/multiplayer/ServerData.field_3761 (Ljava/lang/String;), which 1.20.1 does not have.
+     *  Type: java.lang.String. */
+    public static Object m0109(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0109: net/minecraft/client/multiplayer/ServerData.field_3761");
+    }
+    public static void m0109Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0109 (set): net/minecraft/client/multiplayer/ServerData.field_3761");
+    }
+    public static Object m0109StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0109 (static get): net/minecraft/client/multiplayer/ServerData.field_3761");
+    }
+    public static void m0109StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0109 (static set): net/minecraft/client/multiplayer/ServerData.field_3761");
+    }
+    // TODO: implement the m0109 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/renderer/FogRenderer$FogData.field_60582F (), which 1.20.1 does not have.
+     *  Type: . */
+    public static Object m0110(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0110: net/minecraft/client/renderer/FogRenderer$FogData.field_60582F");
+    }
+    public static void m0110Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0110 (set): net/minecraft/client/renderer/FogRenderer$FogData.field_60582F");
+    }
+    public static Object m0110StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0110 (static get): net/minecraft/client/renderer/FogRenderer$FogData.field_60582F");
+    }
+    public static void m0110StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0110 (static set): net/minecraft/client/renderer/FogRenderer$FogData.field_60582F");
+    }
+    // TODO: implement the m0110 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/renderer/FogRenderer$FogData.field_60583F (), which 1.20.1 does not have.
+     *  Type: . */
+    public static Object m0111(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0111: net/minecraft/client/renderer/FogRenderer$FogData.field_60583F");
+    }
+    public static void m0111Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0111 (set): net/minecraft/client/renderer/FogRenderer$FogData.field_60583F");
+    }
+    public static Object m0111StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0111 (static get): net/minecraft/client/renderer/FogRenderer$FogData.field_60583F");
+    }
+    public static void m0111StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0111 (static set): net/minecraft/client/renderer/FogRenderer$FogData.field_60583F");
+    }
+    // TODO: implement the m0111 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/renderer/FogRenderer$FogData.field_60584F (), which 1.20.1 does not have.
+     *  Type: . */
+    public static Object m0112(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0112: net/minecraft/client/renderer/FogRenderer$FogData.field_60584F");
+    }
+    public static void m0112Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0112 (set): net/minecraft/client/renderer/FogRenderer$FogData.field_60584F");
+    }
+    public static Object m0112StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0112 (static get): net/minecraft/client/renderer/FogRenderer$FogData.field_60584F");
+    }
+    public static void m0112StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0112 (static set): net/minecraft/client/renderer/FogRenderer$FogData.field_60584F");
+    }
+    // TODO: implement the m0112 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/renderer/FogRenderer$FogData.field_60585F (), which 1.20.1 does not have.
+     *  Type: . */
+    public static Object m0113(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0113: net/minecraft/client/renderer/FogRenderer$FogData.field_60585F");
+    }
+    public static void m0113Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0113 (set): net/minecraft/client/renderer/FogRenderer$FogData.field_60585F");
+    }
+    public static Object m0113StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0113 (static get): net/minecraft/client/renderer/FogRenderer$FogData.field_60585F");
+    }
+    public static void m0113StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0113 (static set): net/minecraft/client/renderer/FogRenderer$FogData.field_60585F");
+    }
+    // TODO: implement the m0113 accessors against the 1.20.1 API
     /** Voxy reads net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60923 (Lnet/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk;), which 1.20.1 does not have.
      *  Type: net.minecraft.client.renderer.chunk.ChunkRenderDispatcher$RenderChunk. */
-    public static Object m0047(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0047: net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60923");
+    public static Object m0114(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0114: net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60923");
     }
-    public static void m0047Set(Object self, Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0047 (set): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60923");
+    public static void m0114Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0114 (set): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60923");
     }
-    public static Object m0047StaticGet() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0047 (static get): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60923");
+    public static Object m0114StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0114 (static get): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60923");
     }
-    public static void m0047StaticSet(Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0047 (static set): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60923");
+    public static void m0114StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0114 (static set): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60923");
     }
-    // TODO: implement the m0047 accessors against the 1.20.1 API
+    // TODO: implement the m0114 accessors against the 1.20.1 API
     /** Voxy reads net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60925 (Lnet/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk;), which 1.20.1 does not have.
      *  Type: net.minecraft.client.renderer.chunk.ChunkRenderDispatcher$RenderChunk. */
-    public static Object m0048(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0048: net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60925");
+    public static Object m0115(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0115: net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60925");
     }
-    public static void m0048Set(Object self, Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0048 (set): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60925");
+    public static void m0115Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0115 (set): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60925");
     }
-    public static Object m0048StaticGet() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0048 (static get): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60925");
+    public static Object m0115StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0115 (static get): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60925");
     }
-    public static void m0048StaticSet(Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0048 (static set): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60925");
+    public static void m0115StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0115 (static set): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60925");
     }
-    // TODO: implement the m0048 accessors against the 1.20.1 API
+    // TODO: implement the m0115 accessors against the 1.20.1 API
     /** Voxy reads net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60926 (Lnet/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk;), which 1.20.1 does not have.
      *  Type: net.minecraft.client.renderer.chunk.ChunkRenderDispatcher$RenderChunk. */
-    public static Object m0049(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0049: net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60926");
+    public static Object m0116(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0116: net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60926");
     }
-    public static void m0049Set(Object self, Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0049 (set): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60926");
+    public static void m0116Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0116 (set): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60926");
     }
-    public static Object m0049StaticGet() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0049 (static get): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60926");
+    public static Object m0116StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0116 (static get): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60926");
     }
-    public static void m0049StaticSet(Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0049 (static set): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60926");
+    public static void m0116StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0116 (static set): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60926");
     }
-    // TODO: implement the m0049 accessors against the 1.20.1 API
+    // TODO: implement the m0116 accessors against the 1.20.1 API
     /** Voxy reads net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60927 (Lnet/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk;), which 1.20.1 does not have.
      *  Type: net.minecraft.client.renderer.chunk.ChunkRenderDispatcher$RenderChunk. */
-    public static Object m0050(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0050: net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60927");
+    public static Object m0117(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0117: net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60927");
     }
-    public static void m0050Set(Object self, Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0050 (set): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60927");
+    public static void m0117Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0117 (set): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60927");
     }
-    public static Object m0050StaticGet() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0050 (static get): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60927");
+    public static Object m0117StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0117 (static get): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60927");
     }
-    public static void m0050StaticSet(Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0050 (static set): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60927");
+    public static void m0117StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0117 (static set): net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk.field_60927");
     }
-    // TODO: implement the m0050 accessors against the 1.20.1 API
-    /** Voxy reads net/minecraft/world/level/block/RenderShape.field_11455 (Lnet/minecraft/world/level/block/RenderShape;), which 1.20.1 does not have.
-     *  Type: net.minecraft.world.level.block.RenderShape. */
-    public static Object m0051(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0051: net/minecraft/world/level/block/RenderShape.field_11455");
+    // TODO: implement the m0117 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/renderer/texture/SpriteContents.field_64084 (Lnet/minecraft/class_12253;), which 1.20.1 does not have.
+     *  Type: net.minecraft.class_12253. */
+    public static Object m0118(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0118: net/minecraft/client/renderer/texture/SpriteContents.field_64084");
     }
-    public static void m0051Set(Object self, Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0051 (set): net/minecraft/world/level/block/RenderShape.field_11455");
+    public static void m0118Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0118 (set): net/minecraft/client/renderer/texture/SpriteContents.field_64084");
     }
-    public static Object m0051StaticGet() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0051 (static get): net/minecraft/world/level/block/RenderShape.field_11455");
+    public static Object m0118StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0118 (static get): net/minecraft/client/renderer/texture/SpriteContents.field_64084");
     }
-    public static void m0051StaticSet(Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0051 (static set): net/minecraft/world/level/block/RenderShape.field_11455");
+    public static void m0118StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0118 (static set): net/minecraft/client/renderer/texture/SpriteContents.field_64084");
     }
-    // TODO: implement the m0051 accessors against the 1.20.1 API
-    /** Voxy reads net/minecraft/world/level/chunk/ChunkStatus.field_12798 (Lnet/minecraft/world/level/chunk/ChunkStatus;), which 1.20.1 does not have.
-     *  Type: net.minecraft.world.level.chunk.ChunkStatus. */
-    public static Object m0052(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0052: net/minecraft/world/level/chunk/ChunkStatus.field_12798");
-    }
-    public static void m0052Set(Object self, Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0052 (set): net/minecraft/world/level/chunk/ChunkStatus.field_12798");
-    }
-    public static Object m0052StaticGet() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0052 (static get): net/minecraft/world/level/chunk/ChunkStatus.field_12798");
-    }
-    public static void m0052StaticSet(Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0052 (static set): net/minecraft/world/level/chunk/ChunkStatus.field_12798");
-    }
-    // TODO: implement the m0052 accessors against the 1.20.1 API
-    /** Voxy reads net/minecraft/world/level/chunk/ChunkStatus.field_12803 (Lnet/minecraft/world/level/chunk/ChunkStatus;), which 1.20.1 does not have.
-     *  Type: net.minecraft.world.level.chunk.ChunkStatus. */
-    public static Object m0053(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0053: net/minecraft/world/level/chunk/ChunkStatus.field_12803");
-    }
-    public static void m0053Set(Object self, Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0053 (set): net/minecraft/world/level/chunk/ChunkStatus.field_12803");
-    }
-    public static Object m0053StaticGet() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0053 (static get): net/minecraft/world/level/chunk/ChunkStatus.field_12803");
-    }
-    public static void m0053StaticSet(Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0053 (static set): net/minecraft/world/level/chunk/ChunkStatus.field_12803");
-    }
-    // TODO: implement the m0053 accessors against the 1.20.1 API
-    /** Voxy reads net/minecraft/world/level/chunk/PalettedContainer$Data.comp_118 (Lnet/minecraft/util/BitStorage;), which 1.20.1 does not have.
-     *  Type: net.minecraft.util.BitStorage. */
-    public static Object m0054(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0054: net/minecraft/world/level/chunk/PalettedContainer$Data.comp_118");
-    }
-    public static void m0054Set(Object self, Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0054 (set): net/minecraft/world/level/chunk/PalettedContainer$Data.comp_118");
-    }
-    public static Object m0054StaticGet() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0054 (static get): net/minecraft/world/level/chunk/PalettedContainer$Data.comp_118");
-    }
-    public static void m0054StaticSet(Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0054 (static set): net/minecraft/world/level/chunk/PalettedContainer$Data.comp_118");
-    }
-    // TODO: implement the m0054 accessors against the 1.20.1 API
-    /** Voxy reads net/minecraft/world/level/chunk/PalettedContainer$Data.comp_119 (Lnet/minecraft/world/level/chunk/Palette;), which 1.20.1 does not have.
-     *  Type: net.minecraft.world.level.chunk.Palette. */
-    public static Object m0055(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0055: net/minecraft/world/level/chunk/PalettedContainer$Data.comp_119");
-    }
-    public static void m0055Set(Object self, Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0055 (set): net/minecraft/world/level/chunk/PalettedContainer$Data.comp_119");
-    }
-    public static Object m0055StaticGet() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0055 (static get): net/minecraft/world/level/chunk/PalettedContainer$Data.comp_119");
-    }
-    public static void m0055StaticSet(Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0055 (static set): net/minecraft/world/level/chunk/PalettedContainer$Data.comp_119");
-    }
-    // TODO: implement the m0055 accessors against the 1.20.1 API
-    /** Voxy reads net/minecraft/world/level/chunk/PalettedContainer.field_34560 (Lnet/minecraft/world/level/chunk/PalettedContainer$Data;), which 1.20.1 does not have.
-     *  Type: net.minecraft.world.level.chunk.PalettedContainer$Data. */
-    public static Object m0056(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0056: net/minecraft/world/level/chunk/PalettedContainer.field_34560");
-    }
-    public static void m0056Set(Object self, Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0056 (set): net/minecraft/world/level/chunk/PalettedContainer.field_34560");
-    }
-    public static Object m0056StaticGet() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0056 (static get): net/minecraft/world/level/chunk/PalettedContainer.field_34560");
-    }
-    public static void m0056StaticSet(Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0056 (static set): net/minecraft/world/level/chunk/PalettedContainer.field_34560");
-    }
-    // TODO: implement the m0056 accessors against the 1.20.1 API
-    /** Voxy reads net/minecraft/world/level/lighting/LayerLightSectionStorage$SectionType.field_44726 (Lnet/minecraft/world/level/lighting/LayerLightSectionStorage$SectionType;), which 1.20.1 does not have.
-     *  Type: net.minecraft.world.level.lighting.LayerLightSectionStorage$SectionType. */
-    public static Object m0057(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0057: net/minecraft/world/level/lighting/LayerLightSectionStorage$SectionType.field_44726");
-    }
-    public static void m0057Set(Object self, Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0057 (set): net/minecraft/world/level/lighting/LayerLightSectionStorage$SectionType.field_44726");
-    }
-    public static Object m0057StaticGet() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0057 (static get): net/minecraft/world/level/lighting/LayerLightSectionStorage$SectionType.field_44726");
-    }
-    public static void m0057StaticSet(Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0057 (static set): net/minecraft/world/level/lighting/LayerLightSectionStorage$SectionType.field_44726");
-    }
-    // TODO: implement the m0057 accessors against the 1.20.1 API
-    /** Voxy reads net/minecraft/world/phys/Vec3.field_1350D (), which 1.20.1 does not have.
+    // TODO: implement the m0118 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/client/renderer/texture/TextureAtlas.field_64244I (), which 1.20.1 does not have.
      *  Type: . */
-    public static Object m0058(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0058: net/minecraft/world/phys/Vec3.field_1350D");
+    public static Object m0119(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0119: net/minecraft/client/renderer/texture/TextureAtlas.field_64244I");
     }
-    public static void m0058Set(Object self, Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0058 (set): net/minecraft/world/phys/Vec3.field_1350D");
+    public static void m0119Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0119 (set): net/minecraft/client/renderer/texture/TextureAtlas.field_64244I");
     }
-    public static Object m0058StaticGet() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0058 (static get): net/minecraft/world/phys/Vec3.field_1350D");
+    public static Object m0119StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0119 (static get): net/minecraft/client/renderer/texture/TextureAtlas.field_64244I");
     }
-    public static void m0058StaticSet(Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0058 (static set): net/minecraft/world/phys/Vec3.field_1350D");
+    public static void m0119StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0119 (static set): net/minecraft/client/renderer/texture/TextureAtlas.field_64244I");
     }
-    // TODO: implement the m0058 accessors against the 1.20.1 API
-    /** Voxy reads net/minecraft/world/phys/Vec3.field_1351D (), which 1.20.1 does not have.
+    // TODO: implement the m0119 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/core/BlockPos.field_10980 (Lnet/minecraft/core/BlockPos;), which 1.20.1 does not have.
+     *  Type: net.minecraft.core.BlockPos. */
+    public static Object m0120(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0120: net/minecraft/core/BlockPos.field_10980");
+    }
+    public static void m0120Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0120 (set): net/minecraft/core/BlockPos.field_10980");
+    }
+    public static Object m0120StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0120 (static get): net/minecraft/core/BlockPos.field_10980");
+    }
+    public static void m0120StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0120 (static set): net/minecraft/core/BlockPos.field_10980");
+    }
+    // TODO: implement the m0120 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/core/Direction.field_11033 (Lnet/minecraft/core/Direction;), which 1.20.1 does not have.
+     *  Type: net.minecraft.core.Direction. */
+    public static Object m0121(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0121: net/minecraft/core/Direction.field_11033");
+    }
+    public static void m0121Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0121 (set): net/minecraft/core/Direction.field_11033");
+    }
+    public static Object m0121StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0121 (static get): net/minecraft/core/Direction.field_11033");
+    }
+    public static void m0121StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0121 (static set): net/minecraft/core/Direction.field_11033");
+    }
+    // TODO: implement the m0121 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/core/Direction.field_11034 (Lnet/minecraft/core/Direction;), which 1.20.1 does not have.
+     *  Type: net.minecraft.core.Direction. */
+    public static Object m0122(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0122: net/minecraft/core/Direction.field_11034");
+    }
+    public static void m0122Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0122 (set): net/minecraft/core/Direction.field_11034");
+    }
+    public static Object m0122StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0122 (static get): net/minecraft/core/Direction.field_11034");
+    }
+    public static void m0122StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0122 (static set): net/minecraft/core/Direction.field_11034");
+    }
+    // TODO: implement the m0122 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/core/Direction.field_11035 (Lnet/minecraft/core/Direction;), which 1.20.1 does not have.
+     *  Type: net.minecraft.core.Direction. */
+    public static Object m0123(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0123: net/minecraft/core/Direction.field_11035");
+    }
+    public static void m0123Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0123 (set): net/minecraft/core/Direction.field_11035");
+    }
+    public static Object m0123StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0123 (static get): net/minecraft/core/Direction.field_11035");
+    }
+    public static void m0123StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0123 (static set): net/minecraft/core/Direction.field_11035");
+    }
+    // TODO: implement the m0123 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/core/Direction.field_11036 (Lnet/minecraft/core/Direction;), which 1.20.1 does not have.
+     *  Type: net.minecraft.core.Direction. */
+    public static Object m0124(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0124: net/minecraft/core/Direction.field_11036");
+    }
+    public static void m0124Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0124 (set): net/minecraft/core/Direction.field_11036");
+    }
+    public static Object m0124StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0124 (static get): net/minecraft/core/Direction.field_11036");
+    }
+    public static void m0124StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0124 (static set): net/minecraft/core/Direction.field_11036");
+    }
+    // TODO: implement the m0124 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/core/Direction.field_11039 (Lnet/minecraft/core/Direction;), which 1.20.1 does not have.
+     *  Type: net.minecraft.core.Direction. */
+    public static Object m0125(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0125: net/minecraft/core/Direction.field_11039");
+    }
+    public static void m0125Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0125 (set): net/minecraft/core/Direction.field_11039");
+    }
+    public static Object m0125StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0125 (static get): net/minecraft/core/Direction.field_11039");
+    }
+    public static void m0125StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0125 (static set): net/minecraft/core/Direction.field_11039");
+    }
+    // TODO: implement the m0125 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/core/Direction.field_11043 (Lnet/minecraft/core/Direction;), which 1.20.1 does not have.
+     *  Type: net.minecraft.core.Direction. */
+    public static Object m0126(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0126: net/minecraft/core/Direction.field_11043");
+    }
+    public static void m0126Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0126 (set): net/minecraft/core/Direction.field_11043");
+    }
+    public static Object m0126StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0126 (static get): net/minecraft/core/Direction.field_11043");
+    }
+    public static void m0126StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0126 (static set): net/minecraft/core/Direction.field_11043");
+    }
+    // TODO: implement the m0126 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/core/registries/BuiltInRegistries.field_41175 (Lnet/minecraft/core/DefaultedRegistry;), which 1.20.1 does not have.
+     *  Type: net.minecraft.core.DefaultedRegistry. */
+    public static Object m0127(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0127: net/minecraft/core/registries/BuiltInRegistries.field_41175");
+    }
+    public static void m0127Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0127 (set): net/minecraft/core/registries/BuiltInRegistries.field_41175");
+    }
+    public static Object m0127StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0127 (static get): net/minecraft/core/registries/BuiltInRegistries.field_41175");
+    }
+    public static void m0127StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0127 (static set): net/minecraft/core/registries/BuiltInRegistries.field_41175");
+    }
+    // TODO: implement the m0127 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/nbt/NbtOps.field_11560 (Lnet/minecraft/nbt/NbtOps;), which 1.20.1 does not have.
+     *  Type: net.minecraft.nbt.NbtOps. */
+    public static Object m0128(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0128: net/minecraft/nbt/NbtOps.field_11560");
+    }
+    public static void m0128Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0128 (set): net/minecraft/nbt/NbtOps.field_11560");
+    }
+    public static Object m0128StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0128 (static get): net/minecraft/nbt/NbtOps.field_11560");
+    }
+    public static void m0128StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0128 (static set): net/minecraft/nbt/NbtOps.field_11560");
+    }
+    // TODO: implement the m0128 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/util/datafix/fixes/References.field_5720 (Lcom/mojang/datafixers/DSL$TypeReference;), which 1.20.1 does not have.
+     *  Type: com.mojang.datafixers.DSL$TypeReference. */
+    public static Object m0129(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0129: net/minecraft/util/datafix/fixes/References.field_5720");
+    }
+    public static void m0129Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0129 (set): net/minecraft/util/datafix/fixes/References.field_5720");
+    }
+    public static Object m0129StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0129 (static get): net/minecraft/util/datafix/fixes/References.field_5720");
+    }
+    public static void m0129StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0129 (static set): net/minecraft/util/datafix/fixes/References.field_5720");
+    }
+    // TODO: implement the m0129 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/world/BossEvent$BossBarColor.field_5785 (Lnet/minecraft/world/BossEvent$BossBarColor;), which 1.20.1 does not have.
+     *  Type: net.minecraft.world.BossEvent$BossBarColor. */
+    public static Object m0130(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0130: net/minecraft/world/BossEvent$BossBarColor.field_5785");
+    }
+    public static void m0130Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0130 (set): net/minecraft/world/BossEvent$BossBarColor.field_5785");
+    }
+    public static Object m0130StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0130 (static get): net/minecraft/world/BossEvent$BossBarColor.field_5785");
+    }
+    public static void m0130StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0130 (static set): net/minecraft/world/BossEvent$BossBarColor.field_5785");
+    }
+    // TODO: implement the m0130 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/world/BossEvent$BossBarOverlay.field_5795 (Lnet/minecraft/world/BossEvent$BossBarOverlay;), which 1.20.1 does not have.
+     *  Type: net.minecraft.world.BossEvent$BossBarOverlay. */
+    public static Object m0131(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0131: net/minecraft/world/BossEvent$BossBarOverlay.field_5795");
+    }
+    public static void m0131Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0131 (set): net/minecraft/world/BossEvent$BossBarOverlay.field_5795");
+    }
+    public static Object m0131StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0131 (static get): net/minecraft/world/BossEvent$BossBarOverlay.field_5795");
+    }
+    public static void m0131StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0131 (static set): net/minecraft/world/BossEvent$BossBarOverlay.field_5795");
+    }
+    // TODO: implement the m0131 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/world/level/ChunkPos.field_9180I (), which 1.20.1 does not have.
      *  Type: . */
-    public static Object m0059(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0059: net/minecraft/world/phys/Vec3.field_1351D");
+    public static Object m0132(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0132: net/minecraft/world/level/ChunkPos.field_9180I");
     }
-    public static void m0059Set(Object self, Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0059 (set): net/minecraft/world/phys/Vec3.field_1351D");
+    public static void m0132Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0132 (set): net/minecraft/world/level/ChunkPos.field_9180I");
     }
-    public static Object m0059StaticGet() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0059 (static get): net/minecraft/world/phys/Vec3.field_1351D");
+    public static Object m0132StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0132 (static get): net/minecraft/world/level/ChunkPos.field_9180I");
     }
-    public static void m0059StaticSet(Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0059 (static set): net/minecraft/world/phys/Vec3.field_1351D");
+    public static void m0132StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0132 (static set): net/minecraft/world/level/ChunkPos.field_9180I");
     }
-    // TODO: implement the m0059 accessors against the 1.20.1 API
-    /** Voxy reads net/minecraft/world/phys/Vec3.field_1352D (), which 1.20.1 does not have.
+    // TODO: implement the m0132 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/world/level/ChunkPos.field_9181I (), which 1.20.1 does not have.
      *  Type: . */
-    public static Object m0060(Object self) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0060: net/minecraft/world/phys/Vec3.field_1352D");
+    public static Object m0133(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0133: net/minecraft/world/level/ChunkPos.field_9181I");
     }
-    public static void m0060Set(Object self, Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0060 (set): net/minecraft/world/phys/Vec3.field_1352D");
+    public static void m0133Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0133 (set): net/minecraft/world/level/ChunkPos.field_9181I");
     }
-    public static Object m0060StaticGet() {
-        throw new UnsupportedOperationException("RoxyForge bridge m0060 (static get): net/minecraft/world/phys/Vec3.field_1352D");
+    public static Object m0133StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0133 (static get): net/minecraft/world/level/ChunkPos.field_9181I");
     }
-    public static void m0060StaticSet(Object value) {
-        throw new UnsupportedOperationException("RoxyForge bridge m0060 (static set): net/minecraft/world/phys/Vec3.field_1352D");
+    public static void m0133StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0133 (static set): net/minecraft/world/level/ChunkPos.field_9181I");
     }
-    // TODO: implement the m0060 accessors against the 1.20.1 API
+    // TODO: implement the m0133 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/world/level/LightLayer.field_9284 (Lnet/minecraft/world/level/LightLayer;), which 1.20.1 does not have.
+     *  Type: net.minecraft.world.level.LightLayer. */
+    public static Object m0134(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0134: net/minecraft/world/level/LightLayer.field_9284");
+    }
+    public static void m0134Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0134 (set): net/minecraft/world/level/LightLayer.field_9284");
+    }
+    public static Object m0134StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0134 (static get): net/minecraft/world/level/LightLayer.field_9284");
+    }
+    public static void m0134StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0134 (static set): net/minecraft/world/level/LightLayer.field_9284");
+    }
+    // TODO: implement the m0134 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/world/level/block/Block.field_10651 (Lnet/minecraft/core/IdMapper;), which 1.20.1 does not have.
+     *  Type: net.minecraft.core.IdMapper. */
+    public static Object m0135(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0135: net/minecraft/world/level/block/Block.field_10651");
+    }
+    public static void m0135Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0135 (set): net/minecraft/world/level/block/Block.field_10651");
+    }
+    public static Object m0135StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0135 (static get): net/minecraft/world/level/block/Block.field_10651");
+    }
+    public static void m0135StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0135 (static set): net/minecraft/world/level/block/Block.field_10651");
+    }
+    // TODO: implement the m0135 accessors against the 1.20.1 API
+    /** Voxy reads net/minecraft/world/level/block/Blocks.field_10124 (Lnet/minecraft/world/level/block/Block;), which 1.20.1 does not have.
+     *  Type: net.minecraft.world.level.block.Block. */
+    public static Object m0136(Object self) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0136: net/minecraft/world/level/block/Blocks.field_10124");
+    }
+    public static void m0136Set(Object self, Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0136 (set): net/minecraft/world/level/block/Blocks.field_10124");
+    }
+    public static Object m0136StaticGet() {
+        throw new UnsupportedOperationException("RoxyForge bridge m0136 (static get): net/minecraft/world/level/block/Blocks.field_10124");
+    }
+    public static void m0136StaticSet(Object value) {
+        throw new UnsupportedOperationException("RoxyForge bridge m0136 (static set): net/minecraft/world/level/block/Blocks.field_10124");
+    }
+    // TODO: implement the m0136 accessors against the 1.20.1 API
 }

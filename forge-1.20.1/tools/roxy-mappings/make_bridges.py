@@ -123,32 +123,84 @@ def main() -> None:
             index = end + 1
         return "".join(out)
 
+    # Members the remapper *did* rename need their name inverted too: the report shows the SRG name, but
+    # the bytecode still has the intermediary one. This index is the exact reverse of the mapping.
+    member_inverse: dict[tuple[str, str, str], tuple[str, str, str]] = {}
+    mapping_file = mapping_dir / "intermediary-1.21.11-to-srg-1.20.1.txt"
+    if mapping_file.exists():
+        for line in mapping_file.read_text(encoding="utf-8").splitlines():
+            if not line or line[0] == "#" or line[0] == "C":
+                continue
+            parts = line.split("\t")
+            if len(parts) < 7:
+                continue
+            kind, source_owner, source_name, source_descriptor, target_owner, target_name, target_descriptor = parts[:7]
+            # Keyed by owner and SRG name only: the repair stage may have settled on a different overload,
+            # and every overload of one obfuscated name shares the source name anyway.
+            key = (target_owner, target_name)
+            if key not in member_inverse:
+                member_inverse[key] = (source_owner, source_name, source_descriptor)
+
     def source_key(owner: str, member: str, is_method: bool) -> str | None:
-        # Shim classes (net/minecraft/class_XXXX) have no class mapping, so they arrive with the owner
-        # already in the intermediary namespace and only the descriptor needs mapping back.
-        source_owner = inverse_class.get(owner, owner)
         if is_method:
             name = member.split("(")[0]
-            descriptor = de_remap(member[member.index("("):])
-            return f"{source_owner}.{name}{descriptor}"
-        name, descriptor = split_field(member)
+            descriptor = member[member.index("("):]
+        else:
+            name, descriptor = split_field(member)
+        exact = member_inverse.get((owner, name))
+        if exact:
+            source_owner, source_name, source_descriptor = exact
+            member = f"{source_name}{source_descriptor}" if is_method else f"{source_name}{source_descriptor}"
+            return f"{source_owner}.{member}"
+        # No mapping for this member: it was left in the intermediary namespace, so only the owner and the
+        # descriptor classes need mapping back. Shim classes (net/minecraft/class_XXXX) have no class
+        # mapping at all and arrive with the owner already in the right namespace.
+        source_owner = inverse_class.get(owner, owner)
         return f"{source_owner}.{name}{de_remap(descriptor)}"
 
     mapping_dir.mkdir(parents=True, exist_ok=True)
-    bridge_lines = []
+
+    # Bridges are additive: once a call site has been redirected its bridge has to stay, otherwise the next
+    # round loses it and the unresolved count oscillates instead of shrinking.
+    existing: dict[tuple[str, str], str] = {}
+    bridge_file = mapping_dir / "bridges.txt"
+    if bridge_file.exists():
+        for line in bridge_file.read_text(encoding="utf-8").splitlines():
+            parts = line.split("\t")
+            if len(parts) >= 4:
+                existing[(parts[0], f"{parts[1]}.{parts[2]}")] = parts[3]
+    next_index = 1 + max((int(name[1:]) for name in existing.values()), default=0)
+
+    bridge_lines: list[str] = []
+    for (kind, key), known in sorted(existing.items(), key=lambda item: item[1]):
+        owner, _, member = key.partition(".")
+        bridge_lines.append(f"{kind}\t{owner}\t{member}\t{known}")
+
     methods: list[str] = []
     counter = 0
+    fresh = 0
     for kind, owner, member, is_method in rows:
         counter += 1
-        bridge = f"m{counter:04d}"
         # The bridge list is keyed the way the bytecode spells the member: name and descriptor glued
         # together, which is what the redirect builds its lookup key from.
         if is_method:
             key_member = member
         else:
             key_member = "".join(split_field(member))
-        bridge_lines.append(f"{kind}\t{owner}\t{key_member}\t{bridge}")
         source = source_key(owner, member, is_method)
+        known = existing.get((kind, f"{owner}.{key_member}"))
+        if known is None and source:
+            known = existing.get((kind, source))
+        if known is not None:
+            bridge_lines.append(f"{kind}\t{owner}\t{key_member}\t{known}")
+            if source:
+                source_owner, _, rest = source.partition(".")
+                bridge_lines.append(f"{kind}\t{source_owner}\t{rest}\t{known}")
+            continue
+        bridge = f"m{next_index:04d}"
+        next_index += 1
+        fresh += 1
+        bridge_lines.append(f"{kind}\t{owner}\t{key_member}\t{bridge}")
         if source:
             name, _, rest = source.partition(".")
             bridge_lines.append(f"{kind}\t{name}\t{rest}\t{bridge}")
