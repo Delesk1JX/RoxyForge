@@ -1,4 +1,4 @@
-﻿"""Build RoxyForge's runtime mapping: Fabric intermediary 1.21.11 -> Forge 1.20.1 SRG members.
+"""Build RoxyForge's runtime mapping: Fabric intermediary 1.21.11 -> Forge 1.20.1 SRG members.
 
 Voxy is compiled against Fabric intermediary names for 1.21.11. Forge 1.20.1 keeps Mojang's official
 class names at runtime but renames every field/method to SRG (`m_7160_`). So the mapping we need is:
@@ -259,9 +259,72 @@ def _descriptor_shape(descriptor: str) -> str:
     return "".join(out)
 
 
+def _arity(descriptor: str) -> int:
+    depth = 0
+    count = 0
+    index = descriptor.find("(")
+    if index < 0:
+        return 0
+    index += 1
+    start = index
+    while index < len(descriptor):
+        char = descriptor[index]
+        if char == "L":
+            end = descriptor.find(";", index)
+            index = end + 1 if end > 0 else index
+        elif char == "[":
+            pass
+        elif char == ")":
+            if index > start:
+                count += 1
+            return count
+        index += 1
+    return count
+
+
+def _to_target_descriptor(descriptor: str, official_by_intermediary: dict[str, str]) -> str:
+    """Rewrite a descriptor's class names into the target (official 1.20.1) namespace."""
+    out = []
+    index = 0
+    while index < len(descriptor):
+        char = descriptor[index]
+        if char != "L":
+            out.append(char)
+            index += 1
+            continue
+        end = descriptor.find(";", index)
+        if end < 0:
+            break
+        out.append("L" + official_by_intermediary.get(descriptor[index + 1:end], descriptor[index + 1:end]))
+        out.append(";")
+        index = end + 1
+    return "".join(out)
+
+
+def _primitives(descriptor: str) -> str:
+    """Primitives and array depth only, which survive version changes more often than class names."""
+    out = []
+    index = descriptor.find("(")
+    index = 0 if index < 0 else index
+    while index < len(descriptor):
+        char = descriptor[index]
+        if char == "L":
+            end = descriptor.find(";", index)
+            if end < 0:
+                break
+            out.append("L")
+            index = end + 1
+            continue
+        if char == ")":
+            break
+        out.append(char)
+        index += 1
+    return "".join(out)
+
+
 # --------------------------------------------------------------------------- build
 
-def build(voxy_jar: Path | None, out_dir: Path, report_path: Path) -> None:
+def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path | None = None) -> None:
     # Fabric's 1.21.11 tiny maps official <-> intermediary; its 1.20.1 tiny maps obfuscated <-> intermediary,
     # because Mojang mappings did not exist for 1.20.1. Matching the intermediary namespace across the two is
     # what ties 1.21.11 code to 1.20.1 classes.
@@ -288,14 +351,15 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path) -> None:
         return tsrg.members.get((obf_owner, obf_name))
 
     out_dir.mkdir(parents=True, exist_ok=True)
+
     class_lines = []
     for intermediary in sorted(intermediary_new.classes):
         official = target_class(intermediary)
         if official:
             class_lines.append(f"C\t{intermediary}\t{official}")
 
-    # intermediary member names are stable across versions, descriptors are not, so match on the name and
-    # only use the descriptor to pick between overloads.
+    # intermediary member names are stable across versions, descriptors are not, so match on the name
+    # and use the descriptor only to pick between overloads.
     def index_members(table: dict) -> dict[tuple[str, str], list[tuple[str, str, str]]]:
         index: dict[tuple[str, str], list[tuple[str, str, str]]] = {}
         for (owner, name, descriptor), (obf_owner, obf_name, _) in table.items():
@@ -306,6 +370,7 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path) -> None:
     old_fields = index_members(intermediary_old.fields)
 
     def match_member(index, owner, name, descriptor):
+        """Best 1.20.1 candidate for one 1.21.11 member, or None when the choice would be a guess."""
         candidates = index.get((owner, name))
         if not candidates:
             return None, "missing"
@@ -318,28 +383,108 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path) -> None:
         same_shape = [entry for entry in candidates if _descriptor_shape(entry[0]) == wanted]
         if len(same_shape) == 1:
             return same_shape[0], "shape"
+        # Last resort: same number of arguments and same primitive/array positions.
+        same_arity = [entry for entry in candidates
+                      if _arity(entry[0]) == _arity(descriptor) and
+                      _primitives(entry[0]) == _primitives(descriptor)]
+        if len(same_arity) == 1:
+            return same_arity[0], "arity"
         return None, "ambiguous"
 
     member_lines = []
-    quality = {"exact": 0, "name-only": 0, "shape": 0}
+    quality = {"exact": 0, "name-only": 0, "shape": 0, "arity": 0}
     ambiguous: list[str] = []
+    minecraft = None
+    if mc_jar and Path(mc_jar).exists():
+        from mcindex import JarIndex
+        minecraft = JarIndex.read(Path(mc_jar))
+
+    def resolve(entry, official_owner):
+        """(srg name, target descriptor) for a 1.20.1 candidate, or (None, None) when it cannot link."""
+        obf_descriptor, obf_owner, obf_name = entry
+        srg = target_member(obf_owner, obf_name, obf_descriptor)
+        if not srg or not official_owner:
+            return None, None
+        target_descriptor = _to_target_descriptor(obf_descriptor, obf_old_to_official)
+        return srg, target_descriptor
+
+    def exists(kind, official_owner, srg, target_descriptor):
+        """Does 1.20.1 really declare this? Without the jar we cannot tell, so we trust the mapping."""
+        if minecraft is None:
+            return True
+        if not minecraft.has_class(official_owner):
+            return False
+        if kind == "M":
+            return minecraft.has_method(official_owner, srg, target_descriptor)
+        return minecraft.has_field(official_owner, srg, target_descriptor)
+
+    repaired = 0
     for kind, table, index in (("M", intermediary_new.methods, old_methods),
                                ("F", intermediary_new.fields, old_fields)):
         for (owner, name, descriptor) in table:
             entry, how = match_member(index, owner, name, descriptor)
-            if entry is None:
-                if how == "ambiguous":
+            official_owner = target_class(owner)
+            if official_owner is None:
+                continue
+            chosen = None
+            if entry is not None:
+                srg, target_descriptor = resolve(entry, official_owner)
+                if srg and exists(kind, official_owner, srg, target_descriptor):
+                    chosen = (how, srg, target_descriptor)
+            if chosen is None:
+                # The overload we guessed at does not exist in 1.20.1; try every other overload of the
+                # same intermediary name before giving up - one of them is the right one.
+                for other in index.get((owner, name), []):
+                    srg, target_descriptor = resolve(other, official_owner)
+                    if srg and exists(kind, official_owner, srg, target_descriptor):
+                        chosen = ("repaired", srg, target_descriptor)
+                        repaired += 1
+                        break
+            if chosen is None:
+                if entry is not None and how == "ambiguous":
                     ambiguous.append(f"{kind} {owner}.{name}{descriptor}")
                 continue
-            obf_descriptor, obf_owner, obf_name = entry
-            srg = target_member(obf_owner, obf_name, obf_descriptor)
-            official_owner = target_class(owner)
-            if not srg or not official_owner:
-                continue
-            quality[how] += 1
-            member_lines.append(f"{kind}\t{owner}\t{name}\t{descriptor}\t{official_owner}\t{srg}")
+            how, srg, target_descriptor = chosen
+            quality[how if how in quality else "exact"] += 1
+            member_lines.append(f"{kind}\t{owner}\t{name}\t{descriptor}\t{official_owner}\t{srg}\t{target_descriptor}")
 
     target = out_dir / "intermediary-1.21.11-to-srg-1.20.1.txt"
+
+    # Validation against the real Minecraft jar: an entry is only worth keeping if the target name
+    # actually exists in 1.20.1. A wrong SRG name is worse than no mapping at all, because it turns a
+    # resolvable name into a NoSuchMethodError at runtime.
+    dropped_classes = 0
+    dropped_members = 0
+    if mc_jar and Path(mc_jar).exists():
+        from mcindex import JarIndex
+        minecraft = JarIndex.read(Path(mc_jar))
+        official_by_intermediary = dict(line.split("\t")[1:] for line in class_lines)
+
+        kept_classes = []
+        for line in class_lines:
+            if minecraft.has_class(line.split("\t")[2]):
+                kept_classes.append(line)
+            else:
+                dropped_classes += 1
+        class_lines = kept_classes
+
+        kept_members = []
+        for line in member_lines:
+            parts = line.split("\t")
+            kind, target_owner, target_name = parts[0], parts[4], parts[5]
+            descriptor = parts[6] if len(parts) > 6 else _to_target_descriptor(parts[3], official_by_intermediary)
+            if not minecraft.has_class(target_owner):
+                dropped_members += 1
+            elif kind == "M" and not minecraft.has_method(target_owner, target_name, descriptor):
+                dropped_members += 1
+            elif kind == "F" and not minecraft.has_field(target_owner, target_name, descriptor):
+                dropped_members += 1
+            else:
+                kept_members.append(line)
+        member_lines = kept_members
+        print(f"validated against {Path(mc_jar).name}: dropped {dropped_classes} classes, "
+              f"{dropped_members} members that 1.20.1 does not have")
+
     with target.open("w", encoding="utf-8") as handle:
         handle.write("# RoxyForge runtime mapping: Fabric intermediary 1.21.11 -> Forge 1.20.1\n")
         handle.write("# Forge 1.20.1 runs with official class names and SRG members (m_/f_).\n")
@@ -415,8 +560,9 @@ def main() -> None:
     parser.add_argument("--voxy", type=Path, help="Voxy jar to measure coverage against")
     parser.add_argument("--out", type=Path, default=HERE / "roxy-mappings")
     parser.add_argument("--report", type=Path, default=HERE / "coverage-report.json")
+    parser.add_argument("--mc-jar", type=Path, help="Minecraft 1.20.1 SRG jar to validate the mapping against")
     args = parser.parse_args()
-    build(args.voxy, args.out, args.report)
+    build(args.voxy, args.out, args.report, args.mc_jar)
 
 
 if __name__ == "__main__":

@@ -100,9 +100,23 @@ leaving the upstream NeoForge build untouched. Build with:
         left as `method_1548()` because their descriptor changed between versions, and a few picked the
         wrong overload and now carry an SRG name that 1.20.1 does not have (e.g. `Minecraft.m_271549_()`).
         The link checker is exactly the feedback loop the generator needs: generate -> check -> fix.
-- [ ] **M4** structural patches + bridges for 1.20.1, Embeddium instead of Sodium.
-- [ ] **M3b** Java remapper that applies the mapping to Voxy's classes.
-- [ ] **M4** structural patches + bridges for 1.20.1, Embeddium instead of Sodium.
+- [x] **M3d** the mapping generator now verifies itself, and it changed the picture.
+      `build_mappings.py --mc-jar <client-1.20.1-srg.jar>` indexes what Minecraft 1.20.1 really declares
+      (`tools/roxy-mappings/mcindex.py`) and uses it twice:
+      - **validation** - an entry is only written if 1.20.1 declares that class/member with that
+        signature. Before this the generator emitted ~28 700 SRG names that do not exist in 1.20.1; each
+        would have been a `NoSuchMethodError` the static check could not see, because the mapping claimed
+        the reference was handled.
+      - **repair** - when the overload picked by name does not exist in 1.20.1, every other overload of
+        the same intermediary member is tried and the first one that exists wins.
+      Result: from "50 359 entries, many wrong" to **21 705 verified entries, 0 wrong** (13 486 methods,
+      8 219 fields, 6 556 classes). Two matcher tiers were added for signatures that changed shape
+      between versions (arity plus primitive/array positions).
+- [x] **M3c final numbers** with the verified mapping: 350 classes walked, 1024 Minecraft class, 3285
+      method and 1313 field references, **227 unresolved symbols: 13 classes, 151 methods, 63 fields**.
+- [ ] **M4** structural patches + bridges for 1.20.1, Embeddium instead of Sodium. With 227 symbols over
+      13 classes that 1.20.1 does not have at all, this is the bulk of the port - now measured rather
+      than guessed.
 - [ ] **M5** mixins for 1.20.1, drop 1.21-only compat (Iris, Chunky, Sable, TFC, PowerGrid).
 - [ ] **M6** install Embeddium, verify LODs in game, screenshots.
 
