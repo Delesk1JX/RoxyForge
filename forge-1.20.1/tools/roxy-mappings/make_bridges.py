@@ -58,9 +58,17 @@ def safe(name: str) -> str:
 
 
 def split_field(entry: str) -> tuple[str, str]:
-    """Fields arrive as name:descriptor from the link checker."""
-    name, _, descriptor = entry.partition(":")
-    return name, descriptor or "Ljava/lang/Object;"
+    """Split a field reference into name and descriptor.
+
+    The link checker prints name:descriptor, but older reports concatenate the two, which is ambiguous
+    (a field called field_60582F ends in a letter that looks like a primitive descriptor). Both forms are
+    accepted so a stale report cannot silently produce broken keys.
+    """
+    name, separator, descriptor = entry.partition(":")
+    if separator:
+        return name, descriptor
+    match = NAME_AND_DESCRIPTOR.match(entry)
+    return (match.group(1), match.group(2)) if match else (entry, "")
 
 
 def main() -> None:
@@ -116,9 +124,9 @@ def main() -> None:
         return "".join(out)
 
     def source_key(owner: str, member: str, is_method: bool) -> str | None:
-        source_owner = inverse_class.get(owner)
-        if source_owner is None:
-            return None
+        # Shim classes (net/minecraft/class_XXXX) have no class mapping, so they arrive with the owner
+        # already in the intermediary namespace and only the descriptor needs mapping back.
+        source_owner = inverse_class.get(owner, owner)
         if is_method:
             name = member.split("(")[0]
             descriptor = de_remap(member[member.index("("):])
@@ -133,11 +141,17 @@ def main() -> None:
     for kind, owner, member, is_method in rows:
         counter += 1
         bridge = f"m{counter:04d}"
-        bridge_lines.append(f"{kind}\t{owner}\t{member}\t{bridge}")
+        # The bridge list is keyed the way the bytecode spells the member: name and descriptor glued
+        # together, which is what the redirect builds its lookup key from.
+        if is_method:
+            key_member = member
+        else:
+            key_member = "".join(split_field(member))
+        bridge_lines.append(f"{kind}\t{owner}\t{key_member}\t{bridge}")
         source = source_key(owner, member, is_method)
         if source:
             name, _, rest = source.partition(".")
-            bridge_lines.append(f"{kind}\t{name}\t{rest}\t{bridge}\tsource")
+            bridge_lines.append(f"{kind}\t{name}\t{rest}\t{bridge}")
 
         owner_type = owner.replace("/", ".")
         if is_method:
@@ -150,13 +164,17 @@ def main() -> None:
             arguments = ["Object self"] + [f"Object argument{position}" for position in range(count)]
             methods.append(
                 f"    /** Voxy calls {owner}.{name}{descriptor}, which 1.20.1 does not have.\n"
-                f"     *  Types: owner {owner_type}, returns "
+                f"     *  Owner type: {owner_type}, returns "
                 f"{java_type(descriptor[descriptor.rindex(')') + 1:])}. */\n"
                 f"    public static Object {bridge}({', '.join(arguments)}) {{\n"
                 f"        throw new UnsupportedOperationException(\"RoxyForge bridge {bridge}: "
                 f"{owner}.{name}\");\n"
                 f"    }}\n"
-                f"    // TODO: implement {bridge} against the 1.20.1 API")
+                f"    public static Object {bridge}Static({', '.join(arguments[1:]) or ''}) {{\n"
+                f"        throw new UnsupportedOperationException(\"RoxyForge bridge {bridge} (static): "
+                f"{owner}.{name}\");\n"
+                f"    }}\n"
+                f"    // TODO: implement {bridge} and {bridge}Static against the 1.20.1 API")
         else:
             name, descriptor = split_field(member)
             field_type = java_type(descriptor)
@@ -171,7 +189,15 @@ def main() -> None:
                 f"        throw new UnsupportedOperationException(\"RoxyForge bridge {bridge} (set): "
                 f"{owner}.{name}\");\n"
                 f"    }}\n"
-                f"    // TODO: implement the {bridge} getter and setter against the 1.20.1 API")
+                f"    public static Object {bridge}StaticGet() {{\n"
+                f"        throw new UnsupportedOperationException(\"RoxyForge bridge {bridge} "
+                f"(static get): {owner}.{name}\");\n"
+                f"    }}\n"
+                f"    public static void {bridge}StaticSet(Object value) {{\n"
+                f"        throw new UnsupportedOperationException(\"RoxyForge bridge {bridge} "
+                f"(static set): {owner}.{name}\");\n"
+                f"    }}\n"
+                f"    // TODO: implement the {bridge} accessors against the 1.20.1 API")
 
     (mapping_dir / "bridges.txt").write_text("\n".join(bridge_lines) + "\n", encoding="utf-8")
 

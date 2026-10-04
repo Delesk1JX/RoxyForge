@@ -1,7 +1,6 @@
 package net.rasanovum.roxy.loader;
 
 import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -10,25 +9,27 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Rewrites the Minecraft calls Voxy makes that Minecraft 1.20.1 cannot satisfy into static calls on
  * {@code net.rasanovum.roxy.bridge.RoxyBridge}.
  *
- * A method call {@code Owner.member(args)Ret} becomes
- * {@code RoxyBridge.mNNNN(Owner, args)Ret}, and a field read becomes {@code RoxyBridge.mNNNN(Owner)}.
- * The bridge list is produced by tools/roxy-mappings/make_bridges.py from the link checker, so the
- * decision of what needs a bridge is always measured rather than guessed.
+ * A method call {@code Owner.member(args)} becomes
+ * {@code RoxyBridge.mNNNN(owner, args)}, and a field read becomes {@code RoxyBridge.mNNNN(owner)}.
+ * Static calls and static fields have no receiver on the stack, so they use the {@code ...Static}
+ * variants. The bridge list comes from tools/roxy-mappings/make_bridges.py, which reads the link
+ * checker, so what needs a bridge is always measured rather than guessed.
+ *
+ * Bridge parameters are {@code Object} because several of the types involved are package-private in
+ * Minecraft and cannot be named from our package; the real types stay in the javadoc and in bridges.txt.
  */
 final class RoxyBridgeRedirect extends ClassVisitor {
     private static final String BRIDGE_OWNER = "net/rasanovum/roxy/bridge/RoxyBridge";
+    private static final String OBJECT = "Ljava/lang/Object;";
 
     private final Map<String, String> methodBridges = new HashMap<>();
     private final Map<String, String> fieldBridges = new HashMap<>();
-    private final Set<String> known = new HashSet<>();
 
     RoxyBridgeRedirect(ClassVisitor next, Path bridgeList) {
         super(Opcodes.ASM9, next);
@@ -50,7 +51,6 @@ final class RoxyBridgeRedirect extends ClassVisitor {
                 } else {
                     fieldBridges.put(key, parts[3]);
                 }
-                known.add(key);
             }
         } catch (IOException problem) {
             throw new IllegalStateException("cannot read the bridge list " + file, problem);
@@ -59,10 +59,6 @@ final class RoxyBridgeRedirect extends ClassVisitor {
 
     int size() {
         return methodBridges.size() + fieldBridges.size();
-    }
-
-    private boolean isMinecraft(String owner) {
-        return owner.startsWith("net/minecraft/") || owner.startsWith("com/mojang/");
     }
 
     @Override
@@ -80,10 +76,6 @@ final class RoxyBridgeRedirect extends ClassVisitor {
         @Override
         public void visitMethodInsn(int opcode, String owner, String name, String descriptor,
                                     boolean isInterface) {
-            if (!isMinecraft(owner)) {
-                super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
-                return;
-            }
             String bridge = methodBridges.get(owner + '.' + name + descriptor);
             if (bridge == null) {
                 bridge = methodBridges.get(owner + '.' + name);
@@ -92,41 +84,46 @@ final class RoxyBridgeRedirect extends ClassVisitor {
                 super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
                 return;
             }
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, BRIDGE_OWNER, bridge,
-                    bridgeDescriptor(owner, arity(descriptor)), false);
+            boolean isStatic = opcode == Opcodes.INVOKESTATIC;
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, BRIDGE_OWNER,
+                    isStatic ? bridge + "Static" : bridge,
+                    descriptorFor(arity(descriptor), !isStatic), false);
         }
 
         @Override
         public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
-            if (!isMinecraft(owner)) {
-                super.visitFieldInsn(opcode, owner, name, descriptor);
-                return;
-            }
             String bridge = fieldBridges.get(owner + '.' + name + descriptor);
-            if (bridge == null || opcode == Opcodes.PUTSTATIC) {
+            if (bridge == null) {
+                bridge = fieldBridges.get(owner + '.' + name);
+            }
+            if (bridge == null) {
                 super.visitFieldInsn(opcode, owner, name, descriptor);
                 return;
             }
-            if (opcode == Opcodes.GETFIELD) {
-                super.visitMethodInsn(Opcodes.INVOKESTATIC, BRIDGE_OWNER, bridge,
-                        bridgeDescriptor(owner, 0), false);
-            } else {
-                super.visitMethodInsn(Opcodes.INVOKESTATIC, BRIDGE_OWNER, bridge + "Set",
-                        bridgeDescriptor(owner, 1), false);
+            switch (opcode) {
+                case Opcodes.GETFIELD -> super.visitMethodInsn(Opcodes.INVOKESTATIC, BRIDGE_OWNER,
+                        bridge, descriptorFor(0, true), false);
+                case Opcodes.PUTFIELD -> super.visitMethodInsn(Opcodes.INVOKESTATIC, BRIDGE_OWNER,
+                        bridge + "Set", descriptorFor(1, true), false);
+                case Opcodes.GETSTATIC -> super.visitMethodInsn(Opcodes.INVOKESTATIC, BRIDGE_OWNER,
+                        bridge + "StaticGet", descriptorFor(0, false), false);
+                case Opcodes.PUTSTATIC -> super.visitMethodInsn(Opcodes.INVOKESTATIC, BRIDGE_OWNER,
+                        bridge + "StaticSet", descriptorFor(1, false), false);
+                default -> super.visitFieldInsn(opcode, owner, name, descriptor);
             }
         }
     }
 
-    /**
-     * Bridge methods take Object, because several of the types involved are package-private in Minecraft
-     * and cannot be named from our package. Arity still has to match the call site.
-     */
-    private static String bridgeDescriptor(String owner, int arity) {
-        StringBuilder descriptor = new StringBuilder("(Ljava/lang/Object;");
-        for (int position = 0; position < arity; position++) {
-            descriptor.append("Ljava/lang/Object;");
+    /** (Object self?, Object argument...) -> Object, matching what the generator emitted. */
+    private static String descriptorFor(int arity, boolean withSelf) {
+        StringBuilder descriptor = new StringBuilder("(");
+        if (withSelf) {
+            descriptor.append(OBJECT);
         }
-        return descriptor.append(")Ljava/lang/Object;").toString();
+        for (int position = 0; position < arity; position++) {
+            descriptor.append(OBJECT);
+        }
+        return descriptor.append(')').append(OBJECT).toString();
     }
 
     private static int arity(String descriptor) {

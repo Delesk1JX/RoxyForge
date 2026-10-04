@@ -130,7 +130,33 @@ leaving the upstream NeoForge build untouched. Build with:
         implementations.
       Result: **UNRESOLVED classes 0**, and the link checker now sees our jar, so it measures what the
       game will see.
-- [~] **M4b** still open. Three pipeline bugs found and fixed this round:
+- [~] **M4b** bridges are wired and firing. What this round fixed:
+      - bridge keys are written the way the **bytecode** spells the member (name and descriptor glued),
+        because that is what the redirect's lookup key is built from. Fields also accept the older
+        concatenated form, so a stale report cannot silently produce broken keys - that mismatch was why
+        fields did not move at first.
+      - shim classes (`net/minecraft/class_XXXX`) have no class mapping, so their members arrive with the
+        owner already in the intermediary namespace; `source_key` falls back to that instead of dropping
+        the source line.
+      - static calls and static fields have no receiver on the stack, so they use `...Static` bridge
+        variants rather than needing a stack rewrite.
+      Measured: **0 unresolved classes, 90 methods, 14 fields** (was 120/50). Bridge bodies still throw
+        `UnsupportedOperationException` - this milestone is "Voxy links on 1.20.1".
+      Open puzzle: every method name in bridges.txt is already gone from the remapped jar (checked by
+      scanning the output), yet the link checker still reports 90 methods. So the remaining list is not
+      the same set the bridges were generated from - the next step is to diff the two and find out what
+      the checker is actually seeing.
+      Earlier fixes from the same effort, kept for the record:
+      1. member deobfuscation has to be scoped by owner class (obfuscated member names are only unique
+         inside their class - `ac` is a class in one place and a field in another). With that, the mojmap
+         matching stage became valid: +16 599 verified entries, coverage 11.98% -> 27.86%.
+      2. the Minecraft client SRG jar is not the whole API surface - WorldVersion, ChunkResult and
+         PalettedContainerFactory are server-side, and the Mojang server jar ships obfuscated, so it has
+         to be deobfuscated with the 1.20.1 mojmap. build_mappings.py --emit-index writes the combined
+         index (12 896 classes) and the link checker reads it.
+      3. the tiny parser converted member descriptors in a single pass, so any descriptor mentioning a
+         class listed later in the file kept its obfuscated name, silently breaking descriptor-keyed
+         lookups. Two passes fixed it: coverage 27.86% -> 34.64%.
       1. member deobfuscation has to be **scoped by owner class** (obfuscated member names are only
          unique inside their class - `ac` is a class in one place and a field in another). With that,
          the mojmap matching stage became valid: 16 599 extra verified entries, Voxy member coverage
