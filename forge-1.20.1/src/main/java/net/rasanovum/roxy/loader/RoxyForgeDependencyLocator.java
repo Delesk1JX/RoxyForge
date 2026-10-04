@@ -1,8 +1,6 @@
 package net.rasanovum.roxy.loader;
 
 import cpw.mods.jarhandling.SecureJar;
-import cpw.mods.jarhandling.impl.Jar;
-import cpw.mods.jarhandling.impl.ModuleJarMetadata;
 import net.minecraftforge.fml.loading.moddiscovery.ModFileParser;
 import net.minecraftforge.forgespi.locating.IDependencyLocator;
 import net.minecraftforge.forgespi.locating.IModFile;
@@ -144,11 +142,7 @@ public final class RoxyForgeDependencyLocator implements IDependencyLocator {
         Path working = Files.createTempDirectory("roxyforge");
         Path target = working.resolve(source.getFileName().toString().toLowerCase(Locale.ROOT));
         copyAsLibrary(source, target);
-        SecureJar secureJar = new Jar(
-                () -> manifestFor(source),
-                secure -> new ModuleJarMetadata(target.toUri(), Set.of()),
-                (name, size) -> true,
-                target);
+        SecureJar secureJar = SecureJar.from((name, size) -> true, target);
         trace("secure jar built for " + target.getFileName());
         IModFile file = ModFileFactory.FACTORY.build(secureJar, this, ModFileParser::modsTomlParser);
         trace("mod file ready: " + file.getFilePath() + " type=" + file.getType()

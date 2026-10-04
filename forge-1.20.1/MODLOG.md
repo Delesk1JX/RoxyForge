@@ -73,6 +73,20 @@ leaving the upstream NeoForge build untouched. Build with:
       obfuscated names, and tiny v1 member lines start with the **owner**, not the name.
 - [x] **M3a** coverage measured against the real `voxy-0.2.16-beta+1.21.11.jar` (hash verified against
       Modrinth): **93.96 % of referenced Minecraft classes (280/298)** and **42.45 % of members (163/384)**.
+- [x] **M3b** offline remapper: `RoxyForgeMappings` + `RoxyForgeRemapper` (ASM) and the `remapVoxy`
+      Gradle task. Runs outside the game, so it can be iterated on without launching Minecraft:
+
+          gradlew remapVoxy     # -> build/remapped/voxy.jar + build/remapped/remap-report.txt
+
+      Result on Voxy 0.2.16-beta: 350 classes in, 350 out, **306 member renames**, and the leftovers are
+      **19 distinct Minecraft classes** plus **40 members** - the 1.21-only API M4 has to bridge.
+      The worst offender by far is `net/minecraft/class_11515` (99 references), followed by the
+      `class_11630..class_11635` family (36 references), which is the 1.21 storage-layout rework.
+      Naming those classes needs Mojang's 1.21.11 `client.txt`: Fabric's `intermediary-1.21.11.jar`
+      labels its left column "official" but it actually holds 1.21.11 *obfuscated* names (`hth`, `glw`...),
+      so it cannot answer "what is class_11515 in mojmap terms".
+- [ ] **M3c** load the remapped jar and count what still fails to resolve (NoClassDefFoundError /
+      NoSuchMethodError) against a SRG-named Minecraft classpath.
 - [ ] **M3b** Java remapper that applies the mapping to Voxy's classes.
 - [ ] **M4** structural patches + bridges for 1.20.1, Embeddium instead of Sodium.
 - [ ] **M5** mixins for 1.20.1, drop 1.21-only compat (Iris, Chunky, Sable, TFC, PowerGrid).

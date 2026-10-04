@@ -48,12 +48,21 @@ mixin {
     config "${mod_id}.mixins.json"
 }
 
+configurations.all {
+    // Forge 1.20.1 ships securejarhandler 1.0.3; ForgeGradle would otherwise resolve the newer
+    // NeoForge-era artifact, so the locator would compile against an API the game does not have.
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'cpw.mods' && details.requested.name == 'securejarhandler') {
+            details.useVersion '1.0.3'
+            details.because 'matches the Forge 1.20.1 runtime'
+        }
+    }
+}
+
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    // Forge 1.20.1 keeps SecureJar in securejarhandler, outside the userdev artifact's compile classpath.
     compileOnly 'cpw.mods:securejarhandler:1.0.3'
-    runtimeOnly 'cpw.mods:securejarhandler:1.0.3'
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -80,6 +89,18 @@ tasks.named('processResources', ProcessResources).configure {
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
         expand replaceProperties
     }
+}
+
+// M3: offline remap of a Voxy jar with the generated mapping, plus the report the port needs.
+tasks.register('remapVoxy', JavaExec) {
+    group = 'roxyforge'
+    description = 'Remap a Voxy jar to Forge 1.20.1 names and write the coverage report'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'net.rasanovum.roxy.tools.RemapVoxyTool'
+    args project.mapping_file,
+            project.voxy_jar,
+            layout.buildDirectory.file('remapped/voxy.jar').get().asFile.path,
+            layout.buildDirectory.file('remapped/remap-report.txt').get().asFile.path
 }
 
 jar {
