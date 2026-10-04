@@ -143,13 +143,17 @@ leaving the upstream NeoForge build untouched. Build with:
       4. The member reverse index needs the **descriptor** in its key. Without it, overloads collide and
          `Direction.m_235666_(I)Direction` resolved to a completely different method
          (`class_2350.method_42013()Stream`). That single fix took the remainder from 15 to 1.
-      Left: `ResourceLocation.method_60654(String)ResourceLocation`. Its owner has no entry in the class
-      mapping, so the source key cannot be inverted - the bridge exists only under the target-space key and
-      the redirect has no way to recognise the call site. Either the class mapping gains the owner, or the
-      redirect falls back to matching on the method name alone when the owner is unmapped.
-- [ ] **M4d** implement the bridge bodies against the 1.20.1 API. Every body throws
-      `UnsupportedOperationException` on purpose, so this milestone is "Voxy links on 1.20.1".
-- [ ] **M5** feed the remapped jar into the in-game path (SPI) and get the launch stable.
+      Left: `ResourceLocation.method_60654(String)ResourceLocation`, referenced from
+      `me/cortex/voxy/client/config/SodiumConfigBuilder`. Its bridge exists under both the target key
+      (`net/minecraft/resources/ResourceLocation.method_60654`) and the alias, and the owner class *is*
+      mapped (`class_2960`), yet no call site is rewritten - so the reference is not a plain invoke
+      instruction. Most likely it sits in a `Handle` in an `invokedynamic` bootstrap (Voxy uses lambdas
+      heavily), which the redirect does not visit yet. The fix is to rewrite method handles in
+      `visitInvokeDynamicInsn` as well.
+- [ ] **M5** the locator still copies the *original* Voxy jar from `mods/`; it has to copy the remapped
+      one (from `gradlew remapVoxy`), or the in-game class load will use intermediary names. The remapper
+      and the mapping have to reach the game somehow: either as resources of our jar (upstream Roxy
+      remaps at load time) or by shipping the remapped jar next to the user's copy.
 - [ ] **M6** run in 1.20.1 Forge, verify LODs, screenshots.
       Fixes this round: bridge keys are written the way the **bytecode** spells the member (name and
       descriptor glued), because that is what the redirect's lookup key is built from; fields also accept
