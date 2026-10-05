@@ -191,8 +191,35 @@ leaving the upstream NeoForge build untouched. Build with:
     left half working. Next step is to get that packaging right - or, better, drop shim injection
     altogether and point the mapping at shim classes in our own package (`net/rasanovum/roxy/shim/...`),
     which removes the duplicate-package problem by construction.
-- [x] **M5 groundwork** the locator remaps Voxy at load time using the mapping, bridge list and shim index
-      that ship inside our jar, and the instance log shows the whole chain working up to registration.
+- [~] **M5** big step forward: the game now gets **past** the module layer and Forge loads our mod file.
+      What changed: the shim classes are no longer injected into the Voxy copy. They live in our own
+      package (`net/rasanovum/roxy/shim/ShimNNNN`) and `shim-aliases.txt` points the mapping at them, so
+      package `net.minecraft` exists in exactly one module. Class coverage went to **100 %**, and the
+      locator log shows the whole chain:
+
+          remapped 350 classes, 194 member renames, 306 call sites redirected into bridges
+          mod file ready: ...roxyforge-voxy-0.2.16-beta+1.21.11.jar type=MOD mods=[ModInfo@2a066689]
+          registered Voxy voxy-0.2.16-beta+1.21.11.jar as a library mod file
+
+      The game now runs far enough to produce a **real crash report** instead of dying silently, and
+      Voxy must live in `<gamedir>/roxy/` rather than `mods/`.
+      Left, and it is one specific thing: `The Mod File ... has mods that were not found` - Forge declares
+      `[[mods]] modId = "voxy"` in the generated mods.toml but never builds a container for it. The copy
+      really does contain both `META-INF/mods.toml` and an `@Mod("voxy")`-annotated `net/voxy/Voxy.class`
+      (verified inside the temp copy), and the class is excluded from our own jar so there is only ever one
+      copy of the package. So FML's class scan is not seeing it; the next step is to read how
+      `FMLJavaModLanguageProvider` locates the class on 1.20.1 (or to declare the mod id so the class name
+      it derives matches what we inject).
+
+## Environment notes
+
+- Voxy is expected in `<gamedir>/roxy/`, not in `mods/`; the locator warns if it finds it in `mods/`.
+- The instance runs with `-Dmixin.debug.export -Dmixin.debug.verbose` (set through `OverrideJavaArgs`);
+  it turns out we die before Mixin runs, so those args are no longer useful. `instance.cfg.roxybak` holds
+  the original.
+- Offline tools: `gradlew remapVoxy` (remap + report), `gradlew linkCheckVoxy` (link report),
+  `build_mappings.py --emit-index` (Minecraft index incl. the obfuscated server jar), `make_shims.py`,
+  `make_bridges.py`, `propose_member_aliases.py`, `name_missing.py`, `plan_shims.py`.
 - [ ] **M6** run in 1.20.1 Forge, verify LODs, screenshots.
       Fixes this round: bridge keys are written the way the **bytecode** spells the member (name and
       descriptor glued), because that is what the redirect's lookup key is built from; fields also accept

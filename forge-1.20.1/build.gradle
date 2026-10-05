@@ -115,21 +115,20 @@ tasks.register('mcIndex', Exec) {
 }
 
 // The mapping and the bridge list travel with our jar: the locator remaps Voxy at load time, the same way
-// upstream Roxy does, so the user keeps dropping in an untouched Voxy jar.
-def mappingResource = layout.buildDirectory.file('roxyforge/mapping.txt')
-def bridgeResource = layout.buildDirectory.file('roxyforge/bridges.txt')
-
-tasks.register('bundleRoxyForgeData', Copy) {
-    from(project.mapping_file) { rename { 'mapping.txt' } }
-    from(project.file('tools/roxy-mappings/roxy-mappings/bridges.txt')) { rename { 'bridges.txt' } }
-    into layout.buildDirectory.dir('generated-resources')
-}
-
-
+// upstream Roxy does, so the user keeps dropping in an untouched Voxy jar. They are copied straight inside
+// processResources rather than through a task of their own, which could hand back a stale copy.
 tasks.named('processResources') {
-    dependsOn 'bundleRoxyForgeData'
-    from(layout.buildDirectory.dir('generated-resources')) {
+    dependsOn 'copyVoxyEntrypoint'
+    from(project.mapping_file) {
         into 'roxyforge'
+        rename { 'mapping.txt' }
+    }
+    from(project.file('tools/roxy-mappings/roxy-mappings/bridges.txt')) {
+        into 'roxyforge'
+        rename { 'bridges.txt' }
+    }
+    from(layout.buildDirectory.dir('voxy-entrypoint')) {
+        into 'roxyforge/shim'
     }
 }
 
@@ -176,11 +175,23 @@ tasks.register('writeShimIndex') {
     }
 }
 
+// Forge builds a mod container only from classes found *inside* the mod file, so the Voxy copy needs a
+// @Mod class of its own. It travels as a resource instead of as a loadable class of our jar: the same
+// package in two modules of one layer is what broke the module layer before.
+tasks.register('copyVoxyEntrypoint', Sync) {
+    dependsOn 'compileJava'
+    from(sourceSets.main.output.classesDirs) {
+        include 'net/voxy/Voxy.class'
+    }
+    into layout.buildDirectory.dir('voxy-entrypoint')
+}
+
 tasks.named('jar') {
     dependsOn 'writeShimIndex'
     from(shimIndex) {
         into 'roxyforge'
     }
+    exclude 'net/voxy/**'
 }
 
 jar {

@@ -509,23 +509,25 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
 
         # Third-party libraries are never obfuscated, so Fabric's intermediary mapping has no entries
         # for them and the generator cannot line them up. class-renames.txt carries those by hand, and
-        # each target is checked against Minecraft before it goes into the mapping.
+        # shim-aliases.txt redirects the classes 1.20.1 simply does not have to our shims.
         renames_file = Path(__file__).resolve().parent / "class-renames.txt"
+        shim_file = Path(__file__).resolve().parent / "roxy-mappings" / "shim-aliases.txt"
         added = 0
-        if renames_file.exists():
-            for line in renames_file.read_text(encoding="utf-8").splitlines():
+        trusted: set[str] = set()
+        for source in (renames_file, shim_file):
+            if not source.exists():
+                continue
+            for line in source.read_text(encoding="utf-8").splitlines():
                 line = line.strip()
                 if not line or line.startswith("#"):
                     continue
                 parts = line.split()
-                # Nothing to validate against: third-party libraries ship as separate jars, so neither
-                # the Minecraft jar nor Mojang's mapping lists them. These entries are hand-curated and the
-                # link checker has the final say on whether the result links.
                 if len(parts) == 2:
                     class_lines.append(f"C\t{parts[0]}\t{parts[1]}")
+                    trusted.add(parts[1])
                     added += 1
         if added:
-            print(f"class renames added: {added}")
+            print(f"class renames and shim aliases added: {added}")
         if server_jar and Path(server_jar).exists():
             # The Mojang server jar ships obfuscated, so its classes need the 1.20.1 mojmap to be indexed.
             for facts in JarIndex.read(Path(server_jar), mojang.classes).classes.values():
@@ -611,7 +613,9 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
 
         kept_classes = []
         for line in class_lines:
-            if minecraft.has_class(line.split("\t")[2]):
+            class_target = line.split("\t")[2]
+            # Shim and hand-curated renames live in our own jar, not in Minecraft's, so they are trusted.
+            if class_target in trusted or minecraft.has_class(class_target):
                 kept_classes.append(line)
             else:
                 dropped_classes += 1
@@ -634,7 +638,7 @@ def build(voxy_jar: Path | None, out_dir: Path, report_path: Path, mc_jar: Path 
         print(f"validated against {Path(mc_jar).name}: dropped {dropped_classes} classes, "
               f"{dropped_members} members that 1.20.1 does not have")
 
-    with target.open("w", encoding="utf-8") as handle:
+    with Path(target).open("w", encoding="utf-8") as handle:
         handle.write("# RoxyForge runtime mapping: Fabric intermediary 1.21.11 -> Forge 1.20.1\n")
         handle.write("# Forge 1.20.1 runs with official class names and SRG members (m_/f_).\n")
         handle.write("# C <intermediary class> <official 1.20.1 class>\n")
