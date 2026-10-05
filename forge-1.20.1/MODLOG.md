@@ -211,7 +211,26 @@ leaving the upstream NeoForge build untouched. Build with:
       `FMLJavaModLanguageProvider` locates the class on 1.20.1 (or to declare the mod id so the class name
       it derives matches what we inject).
 
-## Environment notes
+## Architecture decision: the Voxy copy is prepared at build time, not at load time
+
+The dependency locator is gone. `gradlew prepareVoxy` produces
+`build/mods/roxyforge-voxy-1.20.1.jar` - the remapped Voxy plus a generated `META-INF/mods.toml` and the
+`@Mod("voxy")` entrypoint class - and `gradlew installVoxy` drops it into the instance's `mods/`. The game
+then loads it as an ordinary mod, which is what made the difference: FML now logs
+`Found valid mod file roxyforge-voxy-1.20.1.jar with {voxy} mods - versions {0.2.16-beta}`, i.e. it accepts
+the file the way it accepts any other mod.
+
+Why the locator could not work: FML 1.20.1 builds a mod container only from the ASM annotation scan of the
+mod file, and a file returned by `IDependencyLocator` never gets a container - it failed with
+`The Mod File ... has mods that were not found` no matter what we injected into it.
+
+Still open: with both mods installed the game exits silently right after JarInJar processing, at the same
+phase as before, and writes no crash report. The mods folder is now scanned by the ordinary locator, so the
+next thing to test is a bisect: `roxyforge-voxy-1.20.1.jar` alone (without our `roxy` jar) and vice versa,
+to see which of the two files the module layer cannot swallow. Voxy's nested libraries under
+`META-INF/jars/` (rocksdb, lmdb, jedis, lz4, xz) are also still missing from the copy - Forge reads
+JarJar metadata, not Fabric's `META-INF/jars/`, so those have to be converted or pulled in before Voxy can
+actually run.
 
 - Voxy is expected in `<gamedir>/roxy/`, not in `mods/`; the locator warns if it finds it in `mods/`.
 - The instance runs with `-Dmixin.debug.export -Dmixin.debug.verbose` (set through `OverrideJavaArgs`);

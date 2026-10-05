@@ -186,6 +186,30 @@ tasks.register('copyVoxyEntrypoint', Sync) {
     into layout.buildDirectory.dir('voxy-entrypoint')
 }
 
+// The Forge-ready copy of Voxy, assembled at build time. Doing it here rather than in an
+// IDependencyLocator matters: FML 1.20.1 only builds a mod container from classes inside a mod file, and
+// its annotation scan never picked up the file our locator created.
+def preparedVoxy = layout.buildDirectory.file('mods/roxyforge-voxy-1.20.1.jar')
+
+tasks.register('prepareVoxy', Exec) {
+    group = 'roxyforge'
+    description = 'Assemble the Forge 1.20.1 copy of Voxy from the remapped jar'
+    dependsOn 'remapVoxy', 'processResources'
+    commandLine 'python', 'tools/roxy-mappings/make_voxy_copy.py',
+            layout.buildDirectory.file('remapped/voxy.jar').get().asFile.path,
+            layout.buildDirectory.file('resources/main/roxyforge/shim/net/voxy/Voxy.class').get().asFile.path,
+            preparedVoxy.get().asFile.path
+}
+
+// Drop it straight into the instance the user is testing in, when that folder is configured.
+tasks.register('installVoxy', Copy) {
+    group = 'roxyforge'
+    description = 'Copy the prepared Voxy jar into the test instance'
+    dependsOn 'prepareVoxy'
+    from(preparedVoxy)
+    into project.findProperty('instance_mods_dir') ?: layout.buildDirectory.dir('unused')
+}
+
 tasks.named('jar') {
     dependsOn 'writeShimIndex'
     from(shimIndex) {
