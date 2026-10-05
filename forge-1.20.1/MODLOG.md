@@ -170,12 +170,29 @@ leaving the upstream NeoForge build untouched. Build with:
         A failed remap also left the copy without a readable `mods.toml`, which surfaced as
         `NullPointerException: ... this.modFileInfo is null`.
 
-      Still open: after registration the JVM leaves cleanly - a shutdown hook proves it - right where
-      ModLauncher initialises the FML transformers. No crash report, no `hs_err`, nothing in any log, and
-      by the time the hook runs only the launcher's threads are left, so the failure is inside the game
-      process before it can log. That points at Mixin transformation or module layer construction over the
-      Voxy copy. Next step: log from inside the transform phase (a `IMixinConfigPlugin` on our own mixin
-      config is the easy place) and/or pass `--mixin.debug.export` so Mixin writes which class it died on.
+      Still open, narrowed down this round. Facts established, in order:
+  - the JVM leaves **cleanly** (`System.exit`), proven by the shutdown hook: no crash report, no `hs_err`,
+    nothing in latest.log or debug.log, and by then only the launcher's threads are left;
+  - it dies right where ModLauncher initialises the FML transformers, before any class is transformed
+    (running with `-Dmixin.debug.export=true` produces no `.mixin.out` at all), so the failure is in
+    building the module layer, not in Mixin;
+  - **control experiment**: with our jar removed from `mods/` the same instance loads all the way to the
+    main menu. So it is our mod file, not the mod set and not the instance;
+  - moving the Voxy jar out of `mods/` into `<gamedir>/roxy/` (the locator now prefers that folder and
+    warns when it finds Voxy in `mods/`) did **not** change the outcome, so a plain split package is not
+    the cause on its own;
+  - that leaves the duplicate shim classes as the prime suspect: the ten `net/minecraft/class_*` shims are
+    loadable classes of **our** jar *and* get injected into the Voxy copy, so package `net.minecraft` ends
+    up in two modules of the same layer - exactly the kind of thing that fails during layer construction
+    with no log line.
+    The fix is to ship them as **resources** under `roxyforge/shims/` and exclude `net/minecraft/**` from
+    the jar. That is wired up in build.gradle (`copyShimClasses`, `exclude 'net/minecraft/**'`), but the
+    `jar` task did not honour the exclude in this session, so the build change was reverted rather than
+    left half working. Next step is to get that packaging right - or, better, drop shim injection
+    altogether and point the mapping at shim classes in our own package (`net/rasanovum/roxy/shim/...`),
+    which removes the duplicate-package problem by construction.
+- [x] **M5 groundwork** the locator remaps Voxy at load time using the mapping, bridge list and shim index
+      that ship inside our jar, and the instance log shows the whole chain working up to registration.
 - [ ] **M6** run in 1.20.1 Forge, verify LODs, screenshots.
       Fixes this round: bridge keys are written the way the **bytecode** spells the member (name and
       descriptor glued), because that is what the redirect's lookup key is built from; fields also accept

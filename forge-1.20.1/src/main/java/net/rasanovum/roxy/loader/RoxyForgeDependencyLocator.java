@@ -146,10 +146,31 @@ done = true;
     }
 
     private static Path findVoxyJar(Path modsDirectory) {
-        if (modsDirectory == null || !Files.isDirectory(modsDirectory)) {
+        String override = System.getProperty("roxyforge.voxy");
+        if (override != null && !override.isBlank() && Files.isRegularFile(Path.of(override))) {
+            return Path.of(override);
+        }
+        // Voxy must live outside mods/: Forge scans the original as well, and two mod files exporting
+        // me.cortex.voxy.* is a split package, which makes building the module layer fail. So the game
+        // directory gets a roxy/ folder and the jar is expected there.
+        Path dedicated = Path.of("roxy");
+        Path found = firstVoxyJar(dedicated);
+        if (found != null) {
+            return found;
+        }
+        found = firstVoxyJar(modsDirectory);
+        if (found != null) {
+            trace("found Voxy in mods/ - move it to " + dedicated.toAbsolutePath()
+                    + "; leaving it there means the original and our copy are both scanned");
+        }
+        return found;
+    }
+
+    private static Path firstVoxyJar(Path directory) {
+        if (directory == null || !Files.isDirectory(directory)) {
             return null;
         }
-        try (var entries = Files.list(modsDirectory)) {
+        try (var entries = Files.list(directory)) {
             return entries.filter(Files::isRegularFile)
                     .filter(RoxyForgeDependencyLocator::looksLikeVoxy)
                     .findFirst()
@@ -166,7 +187,9 @@ done = true;
 
 private IModFile registerVoxy(Path source) throws IOException {
         Path working = Files.createTempDirectory("roxyforge");
-        Path target = working.resolve(source.getFileName().toString().toLowerCase(Locale.ROOT));
+        // The copy must not be named after the original: two mod files with the same file name resolve to
+        // the same module name, and building the module layer then fails with a clean exit and no log.
+        Path target = working.resolve("roxyforge-" + source.getFileName().toString().toLowerCase(Locale.ROOT));
         copyAsLibrary(source, target);
         remapInPlace(target);
         SecureJar secureJar = SecureJar.from((name, size) -> true, target);
