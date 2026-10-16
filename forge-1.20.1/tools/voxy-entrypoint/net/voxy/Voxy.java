@@ -1,6 +1,8 @@
 package net.voxy;
 
 import com.mojang.logging.LogUtils;
+import net.minecraftforge.fml.ModList;
+import net.rasanovum.roxy.loader.RoxyFabricLoaderImpl;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -8,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.lang.reflect.Modifier;
 
 /**
@@ -26,7 +29,21 @@ public final class Voxy {
     private static final String CLIENT = "me.cortex.voxy.client.VoxyClient";
 
     public Voxy() {
+        announce("voxy");
         run(COMMON, "onInitialize");
+    }
+
+    /**
+     * Voxy asks the Fabric loader about itself, so the loader has to know this mod file before Voxy runs.
+     */
+    private static void announce(String modId) {
+        try {
+            Path source = ModList.get().getModFileById(modId).getFile().getFilePath();
+            RoxyFabricLoaderImpl.INSTANCE.register(modId, source);
+            LOGGER.info("VoxyForge: registered the Fabric loader view of {} at {}", modId, source.getFileName());
+        } catch (Throwable failure) {
+            LOGGER.error("VoxyForge: could not register {} with the loader: {}", modId, failure.toString());
+        }
     }
 
     @SubscribeEvent

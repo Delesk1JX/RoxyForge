@@ -153,7 +153,7 @@ tasks.register('linkCheckVoxy', JavaExec) {
 // one layer is exactly what broke the module layer.
 tasks.register('compileVoxyEntrypoint', JavaCompile) {
     source = fileTree('tools/voxy-entrypoint') { include '**/*.java' }
-    classpath = sourceSets.main.compileClasspath
+    classpath = sourceSets.main.output + sourceSets.main.compileClasspath
     destinationDirectory = layout.buildDirectory.dir('voxy-entrypoint')
     options.encoding = 'UTF-8'
     options.release = 17
