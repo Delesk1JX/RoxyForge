@@ -312,3 +312,15 @@ scale, so M4 is the bulk of the remaining work.
 
 The ElyPrism Microsoft session expired, so the 1.20.1 instance no longer starts unattended.
 Needs a re-login in the launcher before M0b/M6 can be re-verified in game.
+## Next blocker: VerifyError from our own call-site rewriting
+
+VoxyCommon now gets past the Fabric loader and runs Voxy's static initializer, which reaches
+me.cortex.voxy.common.config.Serialization.init -> collectAllClasses(Serialization.java:184) and dies
+with java.lang.VerifyError: Instruction type does not match stack map.
+
+That is our doing, not Voxy's. The remapper rewrites Minecraft call sites to RoxyBridge stubs and writes
+with ClassWriter(0), which never recomputes the StackMapTable; where a bridge's descriptor does not match
+the call it replaced (the arity-based fallback tiers are the suspects) the frames no longer describe the
+bytecode and the verifier rejects the class. Two directions, cheapest first: only redirect when the bridge
+descriptor is exactly the original, and/or switch the writer to COMPUTE_FRAMES with a getCommonSuperClass
+that can resolve classes from the remapped Voxy jar plus the Minecraft jar.
