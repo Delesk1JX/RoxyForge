@@ -1,14 +1,55 @@
 package net.voxy;
 
+import com.mojang.logging.LogUtils;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 /**
- * Not Voxy's code and not shipped in Voxy's jar: RoxyForge adds this class to its runtime copy of the
- * Voxy jar so Forge finds a mod entrypoint. Voxy itself is a Fabric mod driven by RoxyForge through its
- * own entrypoint shim, so this class only has to exist and stay quiet.
+ * Forge entrypoint for the Voxy copy. Not Voxy's code and not shipped in Voxy's jar.
+ *
+ * Voxy is a Fabric mod: its own entrypoints are declared in fabric.mod.json and Forge knows nothing about
+ * them, so this class drives them. They are reached by reflection on purpose - their interfaces
+ * (net.fabricmc.api.ModInitializer, ClientModInitializer) are Fabric API types that do not exist on Forge,
+ * and a compile-time dependency on them would only move the problem.
  */
 @Mod("voxy")
 public final class Voxy {
+    private static final Logger LOGGER = LoggerFactory.getLogger("VoxyForge/voxy");
+
+    private static final String COMMON = "me.cortex.voxy.commonImpl.VoxyCommon";
+    private static final String CLIENT = "me.cortex.voxy.client.VoxyClient";
+
     public Voxy() {
+        run(COMMON, "onInitialize");
+    }
+
+    @SubscribeEvent
+    public void onClientSetup(FMLClientSetupEvent event) {
+        run(CLIENT, "onInitializeClient");
+    }
+
+    private static void run(String className, String methodName) {
+        try {
+            Class<?> type = Class.forName(className);
+            Method target = type.getMethod(methodName);
+            Object receiver = null;
+            if (!Modifier.isStatic(target.getModifiers())) {
+                receiver = type.getDeclaredConstructor().newInstance();
+            }
+            target.invoke(receiver);
+            LOGGER.info("VoxyForge: {} ran", className);
+        } catch (Throwable failure) {
+            Throwable cause = failure.getCause() != null ? failure.getCause() : failure;
+            LOGGER.error("VoxyForge: {} could not start: {}", className, cause.toString());
+            for (StackTraceElement frame : cause.getStackTrace()) {
+                LOGGER.error("VoxyForge:   at {}", frame);
+            }
+        }
     }
 }

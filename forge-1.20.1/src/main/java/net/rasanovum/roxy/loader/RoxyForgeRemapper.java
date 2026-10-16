@@ -1,7 +1,9 @@
 package net.rasanovum.roxy.loader;
 
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.Remapper;
 
@@ -95,6 +97,17 @@ public final class RoxyForgeRemapper {
                               Map<String, Integer> unknownClasses, Map<String, Integer> unknownMembers) {
         ClassReader reader = new ClassReader(original);
         ClassWriter writer = new ClassWriter(0);
+        // Voxy is built for Java 21 (class file 65) and Forge 1.20.1 runs on Java 17 (61), which refuses
+        // those classes outright with UnsupportedClassVersionError. The instruction set did not change
+        // between the two releases, so clamping the header down is enough to make them load. ClassWriter.visit
+        // is final, hence the pass-through visitor.
+        ClassVisitor clampVersion = new ClassVisitor(Opcodes.ASM9, writer) {
+            @Override
+            public void visit(int version, int access, String name, String signature, String superName,
+                              String[] interfaces) {
+                super.visit(Math.min(version, Opcodes.V17), access, name, signature, superName, interfaces);
+            }
+        };
         Remapper remapper = new Remapper() {
             @Override
             public String map(String internalName) {
@@ -144,7 +157,7 @@ public final class RoxyForgeRemapper {
                 return name;
             }
         };
-        reader.accept(new RoxyBridgeRedirect(new ClassRemapper(writer, remapper), bridgeList, mappings), 0);
+        reader.accept(new RoxyBridgeRedirect(new ClassRemapper(clampVersion, remapper), bridgeList, mappings), 0);
         return writer.toByteArray();
     }
 
