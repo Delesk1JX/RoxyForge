@@ -224,13 +224,22 @@ Why the locator could not work: FML 1.20.1 builds a mod container only from the 
 mod file, and a file returned by `IDependencyLocator` never gets a container - it failed with
 `The Mod File ... has mods that were not found` no matter what we injected into it.
 
-Still open: with both mods installed the game exits silently right after JarInJar processing, at the same
-phase as before, and writes no crash report. The mods folder is now scanned by the ordinary locator, so the
-next thing to test is a bisect: `roxyforge-voxy-1.20.1.jar` alone (without our `roxy` jar) and vice versa,
-to see which of the two files the module layer cannot swallow. Voxy's nested libraries under
-`META-INF/jars/` (rocksdb, lmdb, jedis, lz4, xz) are also still missing from the copy - Forge reads
-JarJar metadata, not Fabric's `META-INF/jars/`, so those have to be converted or pulled in before Voxy can
-actually run.
+Solved, and the cause was our own jar. It still contained `net/voxy/Voxy.class`: the entrypoint lived in
+`src/main/java`, so the compiler put it in the jar even though `jar { exclude 'net/voxy/**' }` was set, and
+the same package in two modules of one layer is what killed the game silently. The bisect made it obvious -
+with the Voxy copy alone the game reached the main menu, with both mods it died at JarInJar processing.
+
+The entrypoint now lives in `tools/voxy-entrypoint/` and is compiled by a `compileVoxyEntrypoint` task into
+`build/voxy-entrypoint`, outside the main source set, so it cannot land in our jar by construction. Verified:
+our jar has no `net/voxy` entry at all, and `writeShimIndex`/`shims.txt` are gone with the locator. With both
+mods installed the game boots, loads a world, saves it and shuts down cleanly, with
+`RoxyForge: ready on Minecraft 1.20.1 (Forge)` in the log and no crash report. The `Missing metadata in pack`
+warning is gone too: the prepared copy now carries a `pack.mcmeta`.
+
+Still open: Voxy's own code does not run yet. Its `@Mod` class is a quiet stub and Voxy's Fabric entrypoints
+have to be driven by the loader shim, which is why nothing calls `me.cortex.voxy.*` at runtime. Voxy's nested
+libraries under `META-INF/jars/` (rocksdb, lmdb, jedis, lz4, xz) are also missing from the copy - Forge reads
+JarJar metadata, not Fabric's `META-INF/jars/`, so those have to be converted before Voxy can do anything.
 
 - Voxy is expected in `<gamedir>/roxy/`, not in `mods/`; the locator warns if it finds it in `mods/`.
 - The instance runs with `-Dmixin.debug.export -Dmixin.debug.verbose` (set through `OverrideJavaArgs`);

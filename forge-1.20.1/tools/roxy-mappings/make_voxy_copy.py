@@ -1,15 +1,21 @@
 """Assemble the runtime copy of Voxy that Forge 1.20.1 will load as a mod.
 
 The remap itself is done by `gradlew remapVoxy`; this adds what Forge needs to treat the jar as a mod:
-a `META-INF/mods.toml` and a `@Mod`-annotated entrypoint class (FML only builds a mod container from
-classes inside the mod file). The result is a normal mod - no loader magic at game start, which is why
-this happens at build time instead of inside an IDependencyLocator.
+a `META-INF/mods.toml`, a `@Mod`-annotated entrypoint class (FML only builds a mod container from
+classes inside the mod file) and a `pack.mcmeta`, so the mod also registers as a resource pack without
+warnings. The result is a normal mod - no loader magic at game start, which is why this happens at build
+time instead of inside an IDependencyLocator.
 
     make_voxy_copy.py <remapped voxy jar> <entrypoint class> <output jar>
 """
 import sys
 import zipfile
 from pathlib import Path
+
+PACK_MCMETA = """{
+  "pack": { "pack_format": 15, "description": "Voxy (loaded by RoxyForge)" }
+}
+"""
 
 MODS_TOML = """modLoader = "javafml"
 loaderVersion = "[47,)"
@@ -48,12 +54,14 @@ def main() -> None:
                 continue
             out.writestr(item, src.read(item.filename))
         out.writestr("META-INF/mods.toml", MODS_TOML.format(version=version))
+        out.writestr("pack.mcmeta", PACK_MCMETA)
         out.writestr("net/voxy/Voxy.class", entrypoint.read_bytes())
 
     with zipfile.ZipFile(target) as check:
         names = check.namelist()
     print(f"wrote {target} ({target.stat().st_size} bytes, v{version})")
     print(f"  mods.toml: {'META-INF/mods.toml' in names}"
+          f"  pack.mcmeta: {'pack.mcmeta' in names}"
           f"  entrypoint: {'net/voxy/Voxy.class' in names}"
           f"  classes: {len([n for n in names if n.endswith('.class')])}")
 

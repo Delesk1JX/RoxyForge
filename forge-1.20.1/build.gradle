@@ -118,7 +118,6 @@ tasks.register('mcIndex', Exec) {
 // upstream Roxy does, so the user keeps dropping in an untouched Voxy jar. They are copied straight inside
 // processResources rather than through a task of their own, which could hand back a stale copy.
 tasks.named('processResources') {
-    dependsOn 'copyVoxyEntrypoint'
     from(project.mapping_file) {
         into 'roxyforge'
         rename { 'mapping.txt' }
@@ -126,9 +125,6 @@ tasks.named('processResources') {
     from(project.file('tools/roxy-mappings/roxy-mappings/bridges.txt')) {
         into 'roxyforge'
         rename { 'bridges.txt' }
-    }
-    from(layout.buildDirectory.dir('voxy-entrypoint')) {
-        into 'roxyforge/shim'
     }
 }
 
@@ -148,42 +144,19 @@ tasks.register('linkCheckVoxy', JavaExec) {
             layout.buildDirectory.file('remapped/link-report.txt').get().asFile.path
 }
 
-// The shims are compiled into our jar and injected into the runtime copy of the Voxy jar by the
-// locator, so the index of them has to travel with the build.
-def shimIndex = layout.buildDirectory.file('roxyforge/shims.txt')
+// The shims live in our own package (net.rasanovum.roxy.shim) and are ordinary classes of our jar, which
+// is what the remapped Voxy links against.
 
-tasks.register('writeShimIndex') {
-    dependsOn 'classes'
-    def classesDirs = sourceSets.main.output.classesDirs
-    def target = shimIndex
-    inputs.files(classesDirs)
-    outputs.file(target)
-    doLast {
-        // Paths are relative to the classes root: the file travels inside our jar and is read back as a
-        // classpath resource at runtime, where absolute build paths mean nothing.
-        def shims = []
-        classesDirs.each { File root ->
-            fileTree(dir: root, include: 'net/minecraft/class_*.class').each { File file ->
-                shims << root.toPath().relativize(file.toPath()).toString().replace('\\', '/')
-            }
-        }
-        shims.sort()
-        def file = target.get().asFile
-        file.parentFile.mkdirs()
-        file.text = shims.join('\n') + '\n'
-        logger.lifecycle("shim index: ${shims.size()} class(es) -> ${file}")
-    }
-}
-
-// Forge builds a mod container only from classes found *inside* the mod file, so the Voxy copy needs a
-// @Mod class of its own. It travels as a resource instead of as a loadable class of our jar: the same
-// package in two modules of one layer is what broke the module layer before.
-tasks.register('copyVoxyEntrypoint', Sync) {
-    dependsOn 'compileJava'
-    from(sourceSets.main.output.classesDirs) {
-        include 'net/voxy/Voxy.class'
-    }
-    into layout.buildDirectory.dir('voxy-entrypoint')
+// The Voxy copy needs a @Mod class of its own, because Forge builds a mod container only from classes
+// found *inside* the mod file. It is compiled from tools/voxy-entrypoint rather than from the main source
+// set: as part of the main source set it also landed in our jar, and the same package in two modules of
+// one layer is exactly what broke the module layer.
+tasks.register('compileVoxyEntrypoint', JavaCompile) {
+    source = fileTree('tools/voxy-entrypoint') { include '**/*.java' }
+    classpath = sourceSets.main.compileClasspath
+    destinationDirectory = layout.buildDirectory.dir('voxy-entrypoint')
+    options.encoding = 'UTF-8'
+    options.release = 17
 }
 
 // The Forge-ready copy of Voxy, assembled at build time. Doing it here rather than in an
@@ -194,10 +167,10 @@ def preparedVoxy = layout.buildDirectory.file('mods/roxyforge-voxy-1.20.1.jar')
 tasks.register('prepareVoxy', Exec) {
     group = 'roxyforge'
     description = 'Assemble the Forge 1.20.1 copy of Voxy from the remapped jar'
-    dependsOn 'remapVoxy', 'processResources'
+    dependsOn 'remapVoxy', 'compileVoxyEntrypoint'
     commandLine 'python', 'tools/roxy-mappings/make_voxy_copy.py',
             layout.buildDirectory.file('remapped/voxy.jar').get().asFile.path,
-            layout.buildDirectory.file('resources/main/roxyforge/shim/net/voxy/Voxy.class').get().asFile.path,
+            layout.buildDirectory.file('voxy-entrypoint/net/voxy/Voxy.class').get().asFile.path,
             preparedVoxy.get().asFile.path
 }
 
@@ -211,10 +184,6 @@ tasks.register('installVoxy', Copy) {
 }
 
 tasks.named('jar') {
-    dependsOn 'writeShimIndex'
-    from(shimIndex) {
-        into 'roxyforge'
-    }
     exclude 'net/voxy/**'
 }
 
