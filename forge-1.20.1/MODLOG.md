@@ -324,3 +324,11 @@ the call it replaced (the arity-based fallback tiers are the suspects) the frame
 bytecode and the verifier rejects the class. Two directions, cheapest first: only redirect when the bridge
 descriptor is exactly the original, and/or switch the writer to COMPUTE_FRAMES with a getCommonSuperClass
 that can resolve classes from the remapped Voxy jar plus the Minecraft jar.
+
+## Client automation is set up
+
+um win shot cannot capture the Minecraft window (gfxcapture: "Generic error in an external library"), so
+	ools/mcshot.py takes the window rectangle from WinDrive and crops a gdigrab desktop frame. Verified the
+whole loop: screenshot of the main menu (Forge 47.4.10, 10 mods), um win drive --proc javaw "focus" "click
+427 238", screenshot again, and the world list appeared. Window is 854x480 at (533,300), client
+coordinates for clicks are relative to it.
