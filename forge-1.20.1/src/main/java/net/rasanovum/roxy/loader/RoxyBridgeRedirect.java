@@ -30,6 +30,7 @@ public final class RoxyBridgeRedirect extends ClassVisitor {
 
     private final Map<String, String> methodBridges = new HashMap<>();
     private final Map<String, String> fieldBridges = new HashMap<>();
+    private final Map<String, Integer> methodArity = new HashMap<>();
     private final RoxyForgeMappings mappings;
 
     RoxyBridgeRedirect(ClassVisitor next, Path bridgeList, RoxyForgeMappings mappings) {
@@ -73,6 +74,9 @@ public final class RoxyBridgeRedirect extends ClassVisitor {
                 String key = parts[1] + '.' + parts[2];
                 if (parts[0].equals("M")) {
                     methodBridges.put(key, parts[3]);
+                    if (parts.length > 4) {
+                        methodArity.put(parts[3], Integer.parseInt(parts[4].trim()));
+                    }
                 } else if (parts[0].equals("F")) {
                     fieldBridges.put(key, parts[3]);
                 } else {
@@ -117,26 +121,51 @@ public final class RoxyBridgeRedirect extends ClassVisitor {
                 return;
             }
             boolean isStatic = opcode == Opcodes.INVOKESTATIC;
+            String returns = returnOf(descriptor);
+            // The bridge takes Object parameters and returns Object, so a call can only be redirected
+            // when every value on the stack is a reference: a primitive parameter occupies one slot in
+            // the bridge but one or two at the call site, and a primitive return cannot be produced.
+            if (hasPrimitiveParameter(descriptor) || isPrimitive(returns)
+                    || methodArity.getOrDefault(bridge, -1) != arity(descriptor)) {
+                super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+                return;
+            }
             redirects++;
             super.visitMethodInsn(Opcodes.INVOKESTATIC, BRIDGE_OWNER,
                     isStatic ? bridge + "Static" : bridge,
                     descriptorFor(arity(descriptor), !isStatic), false);
+            // The bridge answers Object where the call site wants void or a concrete type. Dropping the
+            // value keeps the stack exactly as the original code had it, which is what the unchanged
+            // stack map frames expect; a cast gives the value its original type back.
+            if (returns.equals("V")) {
+                super.visitInsn(Opcodes.POP);
+            } else if (!returns.equals(OBJECT)) {
+                super.visitTypeInsn(Opcodes.CHECKCAST, castTarget(returns));
+            }
         }
 
         @Override
         public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
             String bridge = lookup(fieldBridges, owner, name + descriptor, name, descriptor);
-            if (bridge == null) {
+            // A primitive field cannot go through an Object-returning bridge: one slot in, one slot out,
+            // but the wrong type on the stack.
+            if (bridge == null || isPrimitive(descriptor)) {
                 super.visitFieldInsn(opcode, owner, name, descriptor);
                 return;
             }
             switch (opcode) {
-                case Opcodes.GETFIELD -> super.visitMethodInsn(Opcodes.INVOKESTATIC, BRIDGE_OWNER,
-                        bridge, descriptorFor(0, true), false);
+                case Opcodes.GETFIELD -> {
+                    super.visitMethodInsn(Opcodes.INVOKESTATIC, BRIDGE_OWNER,
+                            bridge, descriptorFor(0, true), false);
+                    super.visitTypeInsn(Opcodes.CHECKCAST, castTarget(descriptor));
+                }
                 case Opcodes.PUTFIELD -> super.visitMethodInsn(Opcodes.INVOKESTATIC, BRIDGE_OWNER,
                         bridge + "Set", descriptorFor(1, true), false);
-                case Opcodes.GETSTATIC -> super.visitMethodInsn(Opcodes.INVOKESTATIC, BRIDGE_OWNER,
-                        bridge + "StaticGet", descriptorFor(0, false), false);
+                case Opcodes.GETSTATIC -> {
+                    super.visitMethodInsn(Opcodes.INVOKESTATIC, BRIDGE_OWNER,
+                            bridge + "StaticGet", descriptorFor(0, false), false);
+                    super.visitTypeInsn(Opcodes.CHECKCAST, castTarget(descriptor));
+                }
                 case Opcodes.PUTSTATIC -> super.visitMethodInsn(Opcodes.INVOKESTATIC, BRIDGE_OWNER,
                         bridge + "StaticSet", descriptorFor(1, false), false);
                 default -> super.visitFieldInsn(opcode, owner, name, descriptor);
@@ -165,17 +194,66 @@ public final class RoxyBridgeRedirect extends ClassVisitor {
             char character = parameters.charAt(index);
             if (character == '[') {
                 index++;
+                while (index < parameters.length() && parameters.charAt(index) == '[') {
+                    index++;
+                }
+                if (index < parameters.length() && parameters.charAt(index) == 'L') {
+                    int end = parameters.indexOf(';', index);
+                    index = end < 0 ? parameters.length() : end + 1;
+                } else {
+                    index++;
+                }
+                count++;
             } else if (character == 'L') {
                 int end = parameters.indexOf(';', index);
                 if (end < 0) {
                     break;
                 }
                 index = end + 1;
+                count++;
             } else {
                 count++;
                 index++;
             }
         }
         return count;
+    }
+
+    /** The return descriptor of a method descriptor. */
+    private static String returnOf(String descriptor) {
+        return descriptor.substring(descriptor.lastIndexOf(')') + 1);
+    }
+
+    private static boolean isPrimitive(String descriptor) {
+        return descriptor.length() == 1 && "ZBSCIJFD".indexOf(descriptor.charAt(0)) >= 0;
+    }
+
+    private static boolean hasPrimitiveParameter(String descriptor) {
+        String parameters = descriptor.substring(1, descriptor.lastIndexOf(')'));
+        int index = 0;
+        while (index < parameters.length()) {
+            char character = parameters.charAt(index);
+            if (character == '[') {
+                return false;
+            }
+            if (character == 'L') {
+                int end = parameters.indexOf(';', index);
+                if (end < 0) {
+                    return true;
+                }
+                index = end + 1;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** CHECKCAST takes an internal name, or an array descriptor as-is. */
+    private static String castTarget(String descriptor) {
+        if (descriptor.startsWith("L") && descriptor.endsWith(";")) {
+            return descriptor.substring(1, descriptor.length() - 1);
+        }
+        return descriptor;
     }
 }
